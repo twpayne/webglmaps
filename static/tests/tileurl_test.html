@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+	<head>
+		<title>WebGL Maps Unit Tests - webglmaps.tileurl</title>
+		<script src="../closure-library/closure/goog/base.js"></script>
+		<script src="../webglmaps/deps.js"></script>
+		<script>
+			goog.require('goog.functions');
+			goog.require('goog.testing.jsunit');
+			goog.require('webglmaps.TileCoord');
+			goog.require('webglmaps.tileurl');
+		</script>
+	</head>
+	<body>
+		<script>
+
+function testFromTemplate() {
+  var tileUrl = webglmaps.tileurl.fromTemplate('{z}/{x}/{y}');
+  var tileCoord = new webglmaps.TileCoord(1, 2, 3);
+  assertEquals(tileUrl(tileCoord), '1/2/3');
+}
+
+function testFromTileUrls() {
+  var tileUrls = [
+    goog.functions.constant('a'),
+    goog.functions.constant('b'),
+    goog.functions.constant('c')
+  ];
+  var tileUrl = webglmaps.tileurl.fromTileUrls(tileUrls);
+  assertEquals(tileUrl(new webglmaps.TileCoord(1, 0, 0)), 'a');
+  assertEquals(tileUrl(new webglmaps.TileCoord(1, 0, 1)), 'b');
+  assertEquals(tileUrl(new webglmaps.TileCoord(1, 1, 0)), 'c');
+  assertEquals(tileUrl(new webglmaps.TileCoord(1, 1, 1)), 'a');
+}
+
+		</script>
+	</body>
+</html>
