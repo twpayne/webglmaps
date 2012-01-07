@@ -16,7 +16,9 @@
     <title>WebGL Maps</title>
   </head>
   <body>
-    <div id="map" class="map"></div>
+    <div style="width: 640px; height: 480px;">
+      <canvas id="map" width="640" height="480">
+    </div>
     <script type="text/javascript">
       webglmaps.main(document.getElementById('map'));
     </script>

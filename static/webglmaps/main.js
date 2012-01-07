@@ -3,6 +3,7 @@ goog.require('goog.debug.LogManager');
 goog.require('goog.debug.Logger');
 goog.require('goog.debug.Logger.Level');
 goog.require('webglmaps.Map');
+goog.require('webglmaps.TileUrl');
 
 goog.provide('webglmaps.main');
 
@@ -21,7 +22,9 @@ webglmaps.main = function(element) {
     goog.debug.LogManager.getRoot().setLevel(goog.debug.Logger.Level.ALL);
   }
 
-  var map = new webglmaps.Map(element, {});
+  var tileUrl = webglmaps.tileurl.fromTemplate(
+      'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
+  var map = new webglmaps.Map(element, tileUrl);
 
 };
 goog.exportSymbol('webglmaps.main', webglmaps.main);
