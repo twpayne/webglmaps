@@ -28,6 +28,13 @@ window.oRequestAnimationFrame = function(callback, element) {};
  * @param {function()} callback Callback.
  * @param {Element} element Element.
  */
+window.requestAnimationFrame = function(callback, element) {};
+
+
+/**
+ * @param {function()} callback Callback.
+ * @param {Element} element Element.
+ */
 window.webkitRequestAnimationFrame = function(callback, element) {};
 
 
