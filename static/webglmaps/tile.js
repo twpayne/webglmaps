@@ -167,4 +167,4 @@ webglmaps.Tile.prototype.setGL = function(gl) {
  * @const
  * @type {number}
  */
-webglmaps.Tile.FADE_IN_PERIOD = goog.DEBUG ? 0 : 1000;
+webglmaps.Tile.FADE_IN_PERIOD = 1000;
