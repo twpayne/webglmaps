@@ -90,6 +90,11 @@ webglmaps.Program = function(gl) {
   /**
    * @type {WebGLUniformLocation}
    */
+  this.uAlphaLocation = gl.getUniformLocation(program, 'uAlpha');
+
+  /**
+   * @type {WebGLUniformLocation}
+   */
   this.uTextureLocation = gl.getUniformLocation(program, 'uTexture');
 
 };
@@ -127,6 +132,8 @@ webglmaps.Program.prototype.use = function() {
   gl.useProgram(this.program_);
   gl.enableVertexAttribArray(this.aPositionLocation);
   gl.enableVertexAttribArray(this.aTexCoordLocation);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 };
 
 
@@ -137,12 +144,14 @@ webglmaps.Program.prototype.use = function() {
 webglmaps.Program.FRAGMENT_SHADER_SOURCE = [
   'precision mediump float;',
   '',
+  'uniform float uAlpha;',
   'uniform sampler2D uTexture;',
   '',
   'varying vec2 vTexCoord;',
   '',
   'void main(void) {',
   '  gl_FragColor = texture2D(uTexture, vTexCoord);',
+  '  gl_FragColor.a = uAlpha;',
   '}'
 ].join('\n');
 

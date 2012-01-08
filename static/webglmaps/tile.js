@@ -64,6 +64,12 @@ webglmaps.Tile = function(gl, tileCoord, tileUrl) {
   this.imageLoadListener_ = goog.events.listen(image,
       goog.events.EventType.LOAD, goog.bind(this.onImageLoad_, this));
 
+  /**
+   * @private
+   * @type {?number}
+   */
+  this.firstRenderTime_ = null;
+
 };
 goog.inherits(webglmaps.Tile, goog.events.EventTarget);
 
@@ -94,18 +100,32 @@ webglmaps.Tile.prototype.disposeInternal = function() {
  */
 webglmaps.Tile.prototype.render = function(time, program) {
   var gl = this.gl_;
-  if (this.hasTexture()) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
-    gl.vertexAttribPointer(
-        program.aPositionLocation, 2, gl.FLOAT, false, 16, 0);
-    gl.vertexAttribPointer(
-        program.aTexCoordLocation, 2, gl.FLOAT, false, 16, 8);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture_);
-    gl.uniform1i(program.uTextureLocation, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  if (!this.hasTexture()) {
+    return false;
   }
-  return false;
+  var alpha, requestAnimationFrame;
+  if (goog.isNull(this.firstRenderTime_)) {
+    this.firstRenderTime_ = time;
+    alpha = 0;
+    requestAnimationFrame = true;
+  } else if (time - this.firstRenderTime_ < webglmaps.Tile.FADE_IN_PERIOD) {
+    alpha = (time - this.firstRenderTime_) / webglmaps.Tile.FADE_IN_PERIOD;
+    requestAnimationFrame = true;
+  } else {
+    alpha = 1;
+    requestAnimationFrame = false;
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
+  gl.vertexAttribPointer(
+      program.aPositionLocation, 2, gl.FLOAT, false, 16, 0);
+  gl.vertexAttribPointer(
+      program.aTexCoordLocation, 2, gl.FLOAT, false, 16, 8);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, this.texture_);
+  gl.uniform1i(program.uTextureLocation, 0);
+  gl.uniform1f(program.uAlphaLocation, alpha);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  return requestAnimationFrame;
 };
 
 
@@ -135,3 +155,10 @@ webglmaps.Tile.prototype.onImageLoad_ = function(event) {
   this.imageLoadListener_ = null;
   this.dispatchEvent(new goog.events.Event(goog.events.EventType.LOAD, this));
 };
+
+
+/**
+ * @const
+ * @type {number}
+ */
+webglmaps.Tile.FADE_IN_PERIOD = 2000;
