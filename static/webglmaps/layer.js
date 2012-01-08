@@ -79,6 +79,31 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
 
 
 /**
+ * @param {webglmaps.TileCoord} tileCoord Tile coord.
+ * @return {webglmaps.Tile} Tile.
+ */
+webglmaps.Layer.prototype.findInterimTile = function(tileCoord) {
+  tileCoord = tileCoord.clone();
+  var key, tile, tileLoadingState;
+  while (tileCoord.z > 0) {
+    tileCoord.z -= 1;
+    tileCoord.x = Math.floor(tileCoord.x / 2);
+    tileCoord.y = Math.floor(tileCoord.y / 2);
+    key = tileCoord.toString();
+    if (goog.object.containsKey(this.tiles_, key)) {
+      tile = this.tiles_[key];
+      tileLoadingState = tile.getLoadingState();
+      if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
+          tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
+        return tile;
+      }
+    }
+  }
+  return null;
+};
+
+
+/**
  * @param {webglmaps.Tile} tile Tile.
  */
 webglmaps.Layer.prototype.handleTileChange = function(tile) {
@@ -94,14 +119,48 @@ webglmaps.Layer.prototype.handleTileChange = function(tile) {
  * @return {boolean} Dirty?
  */
 webglmaps.Layer.prototype.render = function(time, program, z, box) {
-  var dirty = false;
-  var tile, x, y;
+  /** @type {Object.<number, Object.<string, webglmaps.Tile>>} */
+  var tilesToRender = {};
+  var interimTile, zKey, tile, tileCoord, tileLoadingState, x, y;
   for (x = box.left; x <= box.right; ++x) {
     for (y = box.bottom; y <= box.top; ++y) {
-      tile = this.getTile(new webglmaps.TileCoord(z, x, y));
-      dirty = tile.render(time, program, z) || dirty;
+      tileCoord = new webglmaps.TileCoord(z, x, y);
+      tile = this.getTile(tileCoord);
+      if (goog.isNull(tile)) {
+        tileLoadingState = webglmaps.TileLoadingState.ERROR;
+      } else {
+        tileLoadingState = tile.getLoadingState();
+      }
+      if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
+          tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
+        zKey = tile.tileCoord.z.toString();
+        if (!goog.object.containsKey(tilesToRender, zKey)) {
+          tilesToRender[zKey] = {};
+        }
+        tilesToRender[zKey][tileCoord.toString()] = tile;
+      }
+      if (tileLoadingState == webglmaps.TileLoadingState.WAITING ||
+          tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
+          tileLoadingState == webglmaps.TileLoadingState.ERROR) {
+        interimTile = this.findInterimTile(tileCoord);
+        if (!goog.isNull(interimTile)) {
+          zKey = interimTile.tileCoord.z.toString();
+          if (!goog.object.containsKey(tilesToRender, zKey)) {
+            tilesToRender[zKey] = {};
+          }
+          tilesToRender[zKey][interimTile.tileCoord.toString()] = interimTile;
+        }
+      }
     }
   }
+  var tileZs = goog.object.getKeys(tilesToRender);
+  goog.array.sort(tileZs, Number);
+  var dirty = false;
+  goog.array.forEachRight(tileZs, function(tileZ) {
+    goog.object.forEach(tilesToRender[tileZ], function(tile) {
+      dirty = tile.render(time, program, z) || dirty;
+    });
+  });
   return dirty;
 };
 

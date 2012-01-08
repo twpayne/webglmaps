@@ -29,6 +29,14 @@ webglmaps.TileCoord = function(z, x, y) {
 
 
 /**
+ * @return {webglmaps.TileCoord} Clone.
+ */
+webglmaps.TileCoord.prototype.clone = function() {
+  return new webglmaps.TileCoord(this.z, this.x, this.y);
+};
+
+
+/**
  * @return {number} Hash.
  */
 webglmaps.TileCoord.prototype.hash = function() {
