@@ -3,6 +3,7 @@ goog.require('goog.asserts');
 goog.require('goog.debug');
 goog.require('goog.debug.Logger');
 goog.require('goog.dom');
+goog.require('goog.object');
 goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileUrl');
@@ -75,7 +76,17 @@ webglmaps.Map = function(canvas, tileUrl, opt_tileSize, opt_bgColor) {
    */
   this.tileSize_ = opt_tileSize || 1;
 
-  var gl = /** @type {WebGLRenderingContext} */
+  /**
+   * @type {Object.<number, ?number>}
+   * @private
+   */
+  this.tileLoadListeners_ = {};
+
+  /**
+   * @private
+   * @type {WebGLRenderingContext}
+   */
+  this.gl_ = /** @type {WebGLRenderingContext} */
       (canvas.getContext('experimental-webgl', {
         'alpha': false,
         'depth': false,
@@ -83,7 +94,9 @@ webglmaps.Map = function(canvas, tileUrl, opt_tileSize, opt_bgColor) {
         'stencil': false,
         'preserveDrawingBuffer': false
       }));
-  goog.asserts.assert(!goog.isNull(gl));
+  goog.asserts.assert(!goog.isNull(this.gl_));
+
+  var gl = this.gl_;
 
   var clearColor = opt_bgColor || [0, 0, 0];
   gl.clearColor(clearColor[0], clearColor[1], clearColor[2], 1);
@@ -145,32 +158,32 @@ webglmaps.Map = function(canvas, tileUrl, opt_tileSize, opt_bgColor) {
    * @type {Array.<webglmaps.Tile>}
    */
   this.tiles_ = [];
-  var z = 2, n = 1 << z, x, y;
+  var z = 2, n = 1 << z;
+  var tile, tileCoord, x, y;
   for (x = 0; x < n; ++x) {
     for (y = 0; y < n; ++y) {
-      var tileCoord = new webglmaps.TileCoord(z, x, y);
-      this.tiles_.push(new webglmaps.Tile(gl, tileCoord, this.tileUrl_));
+      tileCoord = new webglmaps.TileCoord(z, x, y);
+      tile = this.requestTile_(tileCoord, this.tileUrl_);
+      this.tiles_.push(tile);
     }
   }
 
-  /**
-   * @private
-   * @type {WebGLRenderingContext}
-   */
-  this.gl_ = gl;
-
-  this.animate_();
+  this.render_();
 
 };
 
 
 /**
+ * @param {webglmaps.Tile} tile Tile.
  * @private
  */
-webglmaps.Map.prototype.animate_ = function() {
-  window.webkitRequestAnimationFrame(
-      goog.bind(this.animate_, this), this.gl_.canvas);
-  this.render_();
+webglmaps.Map.prototype.onTileLoad_ = function(tile) {
+  var uid = goog.getUid(tile);
+  if (goog.object.containsKey(this.tileLoadListeners_, uid)) {
+    goog.events.unlistenByKey(this.tileLoadListeners_[uid]);
+    goog.object.remove(this.tileLoadListeners_, uid);
+  }
+  this.requestAnimationFrame_();
 };
 
 
@@ -218,4 +231,27 @@ webglmaps.Map.prototype.render_ = function() {
         this.textureAttribLocation_);
   }, this);
 
+};
+
+
+/**
+ * @private
+ */
+webglmaps.Map.prototype.requestAnimationFrame_ = function() {
+  window.webkitRequestAnimationFrame(
+      goog.bind(this.render_, this), this.gl_.canvas);
+};
+
+
+/**
+ * @param {webglmaps.TileCoord} tileCoord Tile coord.
+ * @param {webglmaps.TileUrl} tileUrl Tile URL.
+ * @private
+ * @return {webglmaps.Tile} Tile.
+ */
+webglmaps.Map.prototype.requestTile_ = function(tileCoord, tileUrl) {
+  var tile = new webglmaps.Tile(this.gl_, tileCoord, this.tileUrl_);
+  this.tileLoadListeners_[goog.getUid(tile)] = goog.events.listen(
+      tile, goog.events.EventType.LOAD, goog.bind(this.onTileLoad_, this));
+  return tile;
 };

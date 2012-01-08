@@ -15,7 +15,7 @@ goog.provide('webglmaps.Tile');
  * @param {WebGLRenderingContext} gl WebGL rendering context.
  * @param {webglmaps.TileCoord} tileCoord Tile coord.
  * @param {webglmaps.TileUrl} tileUrl Tile URL.
- * @extends {goog.Disposable}
+ * @extends {goog.events.EventTarget}
  */
 webglmaps.Tile = function(gl, tileCoord, tileUrl) {
 
@@ -64,7 +64,7 @@ webglmaps.Tile = function(gl, tileCoord, tileUrl) {
       goog.events.EventType.LOAD, goog.bind(this.onImageLoad_, this));
 
 };
-goog.inherits(webglmaps.Tile, goog.Disposable);
+goog.inherits(webglmaps.Tile, goog.events.EventTarget);
 
 
 /**
@@ -131,4 +131,5 @@ webglmaps.Tile.prototype.onImageLoad_ = function(event) {
   gl.bindTexture(gl.TEXTURE_2D, null);
   goog.events.unlistenByKey(this.imageLoadListener_);
   this.imageLoadListener_ = null;
+  this.dispatchEvent(new goog.events.Event(goog.events.EventType.LOAD, this));
 };
