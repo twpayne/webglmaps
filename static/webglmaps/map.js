@@ -325,8 +325,8 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
   var m = this.mvpMatrix_;
   goog.vec.Mat4.makeIdentity(m);
   goog.vec.Mat4.scale(m,
-      this.tileSize_ * Math.pow(2, this.zoom_) / gl.drawingBufferWidth,
-      this.tileSize_ * Math.pow(2, this.zoom_) / gl.drawingBufferHeight, 1);
+      this.tileSize_ * Math.pow(2, this.zoom_ + 1) / gl.drawingBufferWidth,
+      this.tileSize_ * Math.pow(2, this.zoom_ + 1) / gl.drawingBufferHeight, 1);
   goog.vec.Mat4.rotate(m, this.rotation_, 0, 0, 1);
   goog.vec.Mat4.translate(m, -this.center_[0], -this.center_[1], 0);
 
