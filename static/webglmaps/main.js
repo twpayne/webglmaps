@@ -6,6 +6,7 @@ goog.require('goog.debug.Logger.Level');
 goog.require('goog.debug.errorHandlerWeakDep');
 goog.require('webglmaps.Layer');
 goog.require('webglmaps.Map');
+goog.require('webglmaps.MouseNavigation');
 goog.require('webglmaps.TileUrl');
 
 goog.provide('webglmaps.main');
@@ -31,14 +32,18 @@ webglmaps.main = function(canvas) {
     goog.debug.LogManager.getRoot().setLevel(goog.debug.Logger.Level.ALL);
   }
 
-  var bgColor = goog.color.hexToRgb('#fff');
+  var bgColor = goog.color.hexToRgb(goog.DEBUG ? '#f00' : '#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
 
+  var zoom = 2;
   var tileUrl = webglmaps.tileurl.fromTemplate(
       'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
   var layer = new webglmaps.Layer(tileUrl);
-  layer.populate(0);
+  layer.populate(zoom);
   map.addLayer(layer);
+  map.setZoom(zoom);
+  var mouseNavigation = new webglmaps.MouseNavigation();
+  mouseNavigation.setMap(map);
 
 };
 goog.exportSymbol('webglmaps.main', webglmaps.main);
