@@ -78,9 +78,10 @@ webglmaps.Tile.prototype.disposeInternal = function() {
 /**
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
+ * @param {number} z Z.
  * @return {boolean} Dirty?
  */
-webglmaps.Tile.prototype.render = function(time, program) {
+webglmaps.Tile.prototype.render = function(time, program, z) {
   var gl = this.gl_;
   if (goog.isNull(gl)) {
     return false;
@@ -115,7 +116,10 @@ webglmaps.Tile.prototype.render = function(time, program) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
   }
   var alpha, dirty;
-  if (goog.isNull(this.firstRenderTime_)) {
+  if (this.tileCoord_.z != z) {
+    alpha = 1;
+    dirty = false;
+  } else if (goog.isNull(this.firstRenderTime_)) {
     this.firstRenderTime_ = time;
     alpha = 0;
     dirty = true;

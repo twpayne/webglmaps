@@ -99,7 +99,7 @@ webglmaps.Layer.prototype.render = function(time, program, z, box) {
   for (x = box.left; x <= box.right; ++x) {
     for (y = box.bottom; y <= box.top; ++y) {
       tile = this.getTile(new webglmaps.TileCoord(z, x, y));
-      dirty = tile.render(time, program) || dirty;
+      dirty = tile.render(time, program, z) || dirty;
     }
   }
   return dirty;
