@@ -70,7 +70,7 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
   }
   var tile = new webglmaps.Tile(tileCoord, this.tileUrl_(tileCoord));
   this.tileChangeListeners_[goog.getUid(tile)] = goog.events.listen(
-      tile, goog.events.EventType.CHANGE, goog.bind(this.onTileChange_, this));
+      tile, goog.events.EventType.CHANGE, this.handleTileChange, false, this);
   this.tiles_[key] = tile;
   return tile;
 };
@@ -78,9 +78,8 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
 
 /**
  * @param {webglmaps.Tile} tile Tile.
- * @private
  */
-webglmaps.Layer.prototype.onTileChange_ = function(tile) {
+webglmaps.Layer.prototype.handleTileChange = function(tile) {
   this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE, this));
 };
 

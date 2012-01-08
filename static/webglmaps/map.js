@@ -145,7 +145,7 @@ webglmaps.Map.prototype.addLayer = function(layer) {
   layer.setGL(this.gl_);
   this.layers_.push(layer);
   this.layerChangeListeners_[goog.getUid(layer)] = goog.events.listen(layer,
-      goog.events.EventType.CHANGE, goog.bind(this.onLayerChange_, this));
+      goog.events.EventType.CHANGE, this.handleLayerChange, false, this);
   this.setDirty_();
 };
 
@@ -224,9 +224,8 @@ webglmaps.Map.prototype.getZoom = function() {
 
 
 /**
- * @private
  */
-webglmaps.Map.prototype.onLayerChange_ = function() {
+webglmaps.Map.prototype.handleLayerChange = function() {
   this.setDirty_();
 };
 

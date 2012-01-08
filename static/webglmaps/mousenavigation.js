@@ -1,4 +1,5 @@
 goog.require('goog.events.BrowserEvent');
+goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
 goog.require('goog.vec.Vec3');
 
@@ -53,6 +54,7 @@ webglmaps.MouseNavigation.prototype.handleMouseDown = function(event) {
  */
 webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
   if (this.mouseDown_) {
+    event.preventDefault();
     var position = goog.vec.Vec3.createFromValues(
         event.clientX, event.clientY, 0);
     this.map_.fromElementPixelToPosition(position, position);
@@ -72,7 +74,10 @@ webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.MouseNavigation.prototype.handleMouseOut = function(event) {
-  this.mouseDown_ = false;
+  if (this.mouseDown_) {
+    event.preventDefault();
+    this.mouseDown_ = false;
+  }
 };
 
 
@@ -80,7 +85,10 @@ webglmaps.MouseNavigation.prototype.handleMouseOut = function(event) {
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.MouseNavigation.prototype.handleMouseUp = function(event) {
-  this.mouseDown_ = false;
+  if (this.mouseDown_) {
+    event.preventDefault();
+    this.mouseDown_ = false;
+  }
 };
 
 

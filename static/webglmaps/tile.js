@@ -60,7 +60,7 @@ webglmaps.Tile = function(tileCoord, src) {
   image.crossOrigin = '';
   image.src = src;
   goog.events.listenOnce(
-      image, goog.events.EventType.LOAD, goog.bind(this.onImageLoad_, this));
+      image, goog.events.EventType.LOAD, this.handleImageLoad, false, this);
 
 };
 goog.inherits(webglmaps.Tile, goog.events.EventTarget);
@@ -140,9 +140,8 @@ webglmaps.Tile.prototype.render = function(time, program) {
 
 /**
  * @param {goog.events.BrowserEvent} event Event.
- * @private
  */
-webglmaps.Tile.prototype.onImageLoad_ = function(event) {
+webglmaps.Tile.prototype.handleImageLoad = function(event) {
   this.image_ = /** @type {Image} */ event.currentTarget;
   this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE, this));
 };
