@@ -44,11 +44,13 @@ goog.inherits(webglmaps.MouseNavigation, goog.events.EventHandler);
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.MouseNavigation.prototype.handleMouseDown = function(event) {
-  this.mouseDown_ = true;
-  goog.vec.Vec3.setFromValues(
-      this.previousPosition_, event.clientX, event.clientY, 0);
-  this.map_.fromElementPixelToPosition(
-      this.previousPosition_, this.previousPosition_);
+  if (event.isMouseActionButton()) {
+    this.mouseDown_ = true;
+    goog.vec.Vec3.setFromValues(
+        this.previousPosition_, event.clientX, event.clientY, 0);
+    this.map_.fromElementPixelToPosition(
+        this.previousPosition_, this.previousPosition_);
+  }
 };
 
 
