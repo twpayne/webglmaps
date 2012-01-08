@@ -136,7 +136,7 @@ webglmaps.Layer.prototype.handleTileChange = function(tile) {
  * @param {webglmaps.Program} program Program.
  * @param {number} z Z.
  * @param {goog.math.Box} box Box.
- * @return {boolean} Dirty?
+ * @return {boolean} Animate?
  */
 webglmaps.Layer.prototype.render = function(time, program, z, box) {
   /** @type {Object.<number, Object.<string, webglmaps.Tile>>} */
@@ -175,13 +175,13 @@ webglmaps.Layer.prototype.render = function(time, program, z, box) {
   }
   var tileZs = goog.object.getKeys(tilesToRender);
   goog.array.sort(tileZs, Number);
-  var dirty = false;
+  var animate = false;
   goog.array.forEachRight(tileZs, function(tileZ) {
     goog.object.forEach(tilesToRender[tileZ], function(tile) {
-      dirty = tile.render(time, program, z) || dirty;
+      animate = tile.render(time, program, z) || animate;
     });
   });
-  return dirty;
+  return animate;
 };
 
 

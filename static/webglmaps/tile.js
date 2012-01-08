@@ -105,7 +105,7 @@ webglmaps.Tile.prototype.handleImageError = function(image) {
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
  * @param {number} z Z.
- * @return {boolean} Dirty?
+ * @return {boolean} Animate?
  */
 webglmaps.Tile.prototype.render = function(time, program, z) {
   var gl = this.gl_;
@@ -141,23 +141,23 @@ webglmaps.Tile.prototype.render = function(time, program, z) {
   } else {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
   }
-  var alpha, dirty;
+  var alpha, animate;
   if (this.tileCoord.z != z) {
     this.loadingState_ = webglmaps.TileLoadingState.COMPLETE;
     alpha = 1;
-    dirty = false;
+    animate = false;
   } else if (goog.isNull(this.firstRenderTime_)) {
     this.loadingState_ = webglmaps.TileLoadingState.FADING_IN;
     this.firstRenderTime_ = time;
     alpha = 0;
-    dirty = true;
+    animate = true;
   } else if (time - this.firstRenderTime_ < webglmaps.Tile.FADE_IN_PERIOD) {
     alpha = (time - this.firstRenderTime_) / webglmaps.Tile.FADE_IN_PERIOD;
-    dirty = true;
+    animate = true;
   } else {
     this.loadingState_ = webglmaps.TileLoadingState.COMPLETE;
     alpha = 1;
-    dirty = false;
+    animate = false;
   }
   gl.vertexAttribPointer(program.aPositionLocation, 2, gl.FLOAT, false, 16, 0);
   gl.vertexAttribPointer(program.aTexCoordLocation, 2, gl.FLOAT, false, 16, 8);
@@ -165,7 +165,7 @@ webglmaps.Tile.prototype.render = function(time, program, z) {
   gl.uniform1i(program.uTextureLocation, 0);
   gl.uniform1f(program.uAlphaLocation, alpha);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  return dirty;
+  return animate;
 };
 
 

@@ -260,12 +260,12 @@ webglmaps.Map.prototype.render_ = function() {
       goog.math.clamp(Math.min.apply(null, ys), 0, n - 1),
       goog.math.clamp(Math.min.apply(null, xs), 0, n - 1));
 
-  var dirty = false;
+  var animate = false;
   goog.array.forEach(this.layers_, function(layer) {
-    dirty = layer.render(time, this.program_, z, box) || dirty;
+    animate = layer.render(time, this.program_, z, box) || animate;
   }, this);
 
-  if (dirty) {
+  if (animate) {
     this.requestAnimationFrame_();
   }
 
