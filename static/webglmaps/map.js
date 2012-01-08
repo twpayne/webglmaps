@@ -9,6 +9,7 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.functions');
 goog.require('goog.object');
+goog.require('goog.vec.Mat4');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileCoord');
@@ -161,14 +162,14 @@ webglmaps.Map.prototype.render_ = function() {
     yOffset = -1 + (gl.drawingBufferHeight - gl.drawingBufferWidth) /
         gl.drawingBufferHeight;
   }
-  var mvpMatrix = [
-    xScale, 0, 0, 0,
-    0, yScale, 0, 0,
-    0, 0, 1, 0,
-    xOffset, yOffset, 0, 1
-  ];
+  var mvpMatrix = goog.vec.Mat4.createFromValues(
+      xScale, 0, 0, 0,
+      0, yScale, 0, 0,
+      0, 0, 1, 0,
+      xOffset, yOffset, 0, 1
+  );
   gl.uniformMatrix4fv(
-      this.program_.uMVPMatrixLocation, false, new Float32Array(mvpMatrix));
+      this.program_.uMVPMatrixLocation, false, mvpMatrix);
 
   var requestAnimationFrames = goog.array.map(
       this.layers_, function(layer) {
