@@ -3,6 +3,10 @@ goog.require('goog.asserts');
 goog.require('goog.debug');
 goog.require('goog.debug.Logger');
 goog.require('goog.dom');
+goog.require('goog.events');
+goog.require('goog.events.EventHandler');
+goog.require('goog.events.EventTarget');
+goog.require('goog.events.EventType');
 goog.require('goog.functions');
 goog.require('goog.object');
 goog.require('webglmaps.Program');
@@ -17,12 +21,12 @@ goog.provide('webglmaps.Map');
 
 /**
  * @constructor
+ * @extends {goog.events.EventTarget}
  * @param {HTMLCanvasElement} canvas Canvas.
- * @param {webglmaps.TileUrl} tileUrl Tile URL.
  * @param {number=} opt_tileSize Tile size.
  * @param {Array.<number>=} opt_bgColor Background color.
  */
-webglmaps.Map = function(canvas, tileUrl, opt_tileSize, opt_bgColor) {
+webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
@@ -32,21 +36,21 @@ webglmaps.Map = function(canvas, tileUrl, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
-   * @type {webglmaps.TileUrl}
-   */
-  this.tileUrl_ = tileUrl;
-
-  /**
-   * @private
    * @type {number}
    */
-  this.tileSize_ = opt_tileSize || 1;
+  this.tileSize_ = opt_tileSize || 256;
 
   /**
-   * @type {Object.<number, ?number>}
    * @private
+   * @type {Array.<webglmaps.Layer>}
    */
-  this.tileLoadListeners_ = {};
+  this.layers_ = [];
+
+  /**
+   * @private
+   * @type {Object.<number, ?number>}
+   */
+  this.layerChangeListeners_ = {};
 
   /**
    * @private
@@ -83,36 +87,45 @@ webglmaps.Map = function(canvas, tileUrl, opt_tileSize, opt_bgColor) {
   this.program_ = new webglmaps.Program(gl);
   this.program_.use();
 
-  /**
-   * @private
-   * @type {Array.<webglmaps.Tile>}
-   */
-  this.tiles_ = [];
-  var z = 2, n = 1 << z;
-  var tile, tileCoord, x, y;
-  for (x = 0; x < n; ++x) {
-    for (y = 0; y < n; ++y) {
-      tileCoord = new webglmaps.TileCoord(z, x, y);
-      tile = this.requestTile_(tileCoord, this.tileUrl_);
-      this.tiles_.push(tile);
-    }
-  }
-
   this.render_();
 
+};
+goog.inherits(webglmaps.Map, goog.events.EventTarget);
+
+
+/**
+ * @param {webglmaps.Layer} layer Layer.
+ */
+webglmaps.Map.prototype.addLayer = function(layer) {
+  layer.setGL(this.gl_);
+  this.layers_.push(layer);
+  this.layerChangeListeners_[goog.getUid(layer)] = goog.events.listen(layer,
+      goog.events.EventType.CHANGE, goog.bind(this.onLayerChange_, this));
+  this.requestAnimationFrame_();
 };
 
 
 /**
- * @param {webglmaps.Tile} tile Tile.
+ * @protected
+ */
+webglmaps.Map.prototype.disposeInternal = function() {
+  goog.base(this, 'disposeInternal');
+  var gl = this.gl_;
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  gl.bindTexture(gl.TEXTURE0, null);
+  goog.disposeAll(this.layers_);
+  this.layers_ = null;
+  gl.useProgram(null);
+  goog.dispose(this.program_);
+  this.program_ = null;
+  this.gl_ = null;
+};
+
+
+/**
  * @private
  */
-webglmaps.Map.prototype.onTileLoad_ = function(tile) {
-  var uid = goog.getUid(tile);
-  if (goog.object.containsKey(this.tileLoadListeners_, uid)) {
-    goog.events.unlistenByKey(this.tileLoadListeners_[uid]);
-    goog.object.remove(this.tileLoadListeners_, uid);
-  }
+webglmaps.Map.prototype.onLayerChange_ = function() {
   this.requestAnimationFrame_();
 };
 
@@ -158,11 +171,10 @@ webglmaps.Map.prototype.render_ = function() {
       this.program_.uMVPMatrixLocation, false, new Float32Array(mvpMatrix));
 
   var requestAnimationFrames = goog.array.map(
-      this.tiles_, function(tile) {
-        return tile.render(time, this.program_);
+      this.layers_, function(layer) {
+        return layer.render(time, this.program_);
       }, this);
   if (goog.array.some(requestAnimationFrames, goog.functions.identity)) {
-    this.logger_.info('tile requestAnimationFrame_');
     this.requestAnimationFrame_();
   }
 
@@ -175,18 +187,4 @@ webglmaps.Map.prototype.render_ = function() {
 webglmaps.Map.prototype.requestAnimationFrame_ = function() {
   window.webkitRequestAnimationFrame(
       goog.bind(this.render_, this), this.gl_.canvas);
-};
-
-
-/**
- * @param {webglmaps.TileCoord} tileCoord Tile coord.
- * @param {webglmaps.TileUrl} tileUrl Tile URL.
- * @private
- * @return {webglmaps.Tile} Tile.
- */
-webglmaps.Map.prototype.requestTile_ = function(tileCoord, tileUrl) {
-  var tile = new webglmaps.Tile(this.gl_, tileCoord, this.tileUrl_);
-  this.tileLoadListeners_[goog.getUid(tile)] = goog.events.listen(
-      tile, goog.events.EventType.LOAD, goog.bind(this.onTileLoad_, this));
-  return tile;
 };
