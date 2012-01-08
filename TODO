@@ -2,3 +2,6 @@ Fix webglmaps.utils.requestAnimationFrame
 Fix pan in compiled version
 Rotate around mouse cursor
 Zoom to/from mouse cursor
+Canvas should fill div/window
+Add tile cache (including freeing textures as separate step from freeing images)
+Layer.findInterimTile should also search lower down the pyramid
