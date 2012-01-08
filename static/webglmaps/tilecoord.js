@@ -37,6 +37,23 @@ webglmaps.TileCoord.prototype.clone = function() {
 
 
 /**
+ * @param {goog.vec.Vec3.Vec3Like=} opt_center Center.
+ * @return {!goog.vec.Vec3.Vec3Like} Center.
+ */
+webglmaps.TileCoord.prototype.getCenter = function(opt_center) {
+  var n = 1 << this.z;
+  if (goog.isDefAndNotNull(opt_center)) {
+    goog.vec.Vec3.setFromValues(
+        opt_center, (this.x + 0.5) / n, (n - this.y - 0.5) / n, 0);
+    return opt_center;
+  } else {
+    return goog.vec.Vec3.createFromValues(
+        (this.x + 0.5) / n, (n - this.y - 0.5) / n, 0);
+  }
+};
+
+
+/**
  * @return {number} Hash.
  */
 webglmaps.TileCoord.prototype.hash = function() {

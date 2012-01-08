@@ -7,6 +7,7 @@ goog.require('goog.math.Box');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileCoord');
+goog.require('webglmaps.TileQueue');
 goog.require('webglmaps.TileUrl');
 
 goog.provide('webglmaps.Layer');
@@ -29,6 +30,12 @@ webglmaps.Layer = function(tileUrl, opt_minZ, opt_maxZ) {
    * @private
    */
   this.gl_ = null;
+
+  /**
+   * @type {webglmaps.TileQueue}
+   * @private
+   */
+  this.tileQueue_ = null;
 
   /**
    * @type {Object.<number, ?number>}
@@ -89,7 +96,8 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
   if (goog.object.containsKey(this.tiles_, key)) {
     return this.tiles_[key];
   }
-  var tile = new webglmaps.Tile(tileCoord, this.tileUrl_(tileCoord));
+  var tile = new webglmaps.Tile(
+      tileCoord, this.tileUrl_(tileCoord), this.tileQueue_);
   tile.setGL(this.gl_);
   this.tileChangeListeners_[goog.getUid(tile)] = goog.events.listen(
       tile, goog.events.EventType.CHANGE, this.handleTileChange, false, this);
@@ -193,4 +201,12 @@ webglmaps.Layer.prototype.setGL = function(gl) {
   goog.object.forEach(this.tiles_, function(tile) {
     tile.setGL(gl);
   });
+};
+
+
+/**
+ * @param {webglmaps.TileQueue} tileQueue Tile queue.
+ */
+webglmaps.Layer.prototype.setTileQueue = function(tileQueue) {
+  this.tileQueue_ = tileQueue;
 };

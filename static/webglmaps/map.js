@@ -13,6 +13,7 @@ goog.require('goog.vec.Vec3');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileCoord');
+goog.require('webglmaps.TileQueue');
 goog.require('webglmaps.TileUrl');
 goog.require('webglmaps.utils');
 
@@ -58,6 +59,12 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @type {number}
    */
   this.rotation_ = 0;
+
+  /**
+   * @private
+   * @type {webglmaps.TileQueue}
+   */
+  this.tileQueue_ = new webglmaps.TileQueue(this);
 
   /**
    * @private
@@ -136,6 +143,7 @@ goog.inherits(webglmaps.Map, goog.events.EventTarget);
  */
 webglmaps.Map.prototype.addLayer = function(layer) {
   layer.setGL(this.gl_);
+  layer.setTileQueue(this.tileQueue_);
   this.layers_.push(layer);
   this.layerChangeListeners_[goog.getUid(layer)] = goog.events.listen(layer,
       goog.events.EventType.CHANGE, this.handleLayerChange, false, this);
@@ -263,6 +271,8 @@ webglmaps.Map.prototype.render_ = function() {
     this.requestAnimationFrame_();
   }
 
+  this.tileQueue_.update();
+
 };
 
 
@@ -281,6 +291,7 @@ webglmaps.Map.prototype.requestAnimationFrame_ = function() {
 webglmaps.Map.prototype.setCenter = function(center) {
   if (!goog.vec.Vec3.equals(this.center_, center)) {
     goog.vec.Vec3.setFromArray(this.center_, center);
+    this.tileQueue_.reprioritize();
     this.updateMatrices_();
     this.setDirty_();
   }
@@ -304,6 +315,7 @@ webglmaps.Map.prototype.setDirty_ = function() {
 webglmaps.Map.prototype.setRotation = function(rotation) {
   if (this.rotation_ != rotation) {
     this.rotation_ = rotation;
+    this.tileQueue_.reprioritize();
     this.updateMatrices_();
     this.setDirty_();
   }
@@ -317,6 +329,7 @@ webglmaps.Map.prototype.setZoom = function(zoom) {
   zoom = Math.max(zoom, 0);
   if (this.zoom_ != zoom) {
     this.zoom_ = zoom;
+    this.tileQueue_.reprioritize();
     this.updateMatrices_();
     this.setDirty_();
   }
@@ -329,6 +342,7 @@ webglmaps.Map.prototype.thaw = function() {
   goog.asserts.assert(this.frozen_ > 0);
   if (--this.frozen_ <= 0) {
     this.render_();
+    this.tileQueue_.reprioritize();
   }
 };
 
