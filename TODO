@@ -1,2 +1,4 @@
 Fix webglmaps.utils.requestAnimationFrame
 Fix pan in compiled version
+Rotate around mouse cursor
+Zoom to/from mouse cursor

@@ -1,6 +1,9 @@
 goog.require('goog.events.BrowserEvent');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
+goog.require('goog.events.MouseWheelEvent');
+goog.require('goog.events.MouseWheelHandler');
+goog.require('goog.math');
 goog.require('goog.vec.Vec3');
 
 goog.provide('webglmaps.MouseNavigation');
@@ -93,6 +96,24 @@ webglmaps.MouseNavigation.prototype.handleMouseUp = function(event) {
 
 
 /**
+ * @param {goog.events.MouseWheelEvent} event Event.
+ */
+webglmaps.MouseNavigation.prototype.handleMouseWheel = function(event) {
+  event.preventDefault();
+  if (event.deltaX !== 0) {
+    var rotation = this.map_.getRotation();
+    rotation -= goog.math.sign(event.deltaX) * Math.PI / 180;
+    this.map_.setRotation(rotation);
+  }
+  if (event.deltaY !== 0) {
+    var zoom = this.map_.getZoom();
+    zoom -= goog.math.sign(event.deltaY);
+    this.map_.setZoom(zoom);
+  }
+};
+
+
+/**
  * @param {webglmaps.Map} map Map.
  */
 webglmaps.MouseNavigation.prototype.setMap = function(map) {
@@ -104,5 +125,9 @@ webglmaps.MouseNavigation.prototype.setMap = function(map) {
     this.listen(element, goog.events.EventType.MOUSEMOVE, this.handleMouseMove);
     this.listen(element, goog.events.EventType.MOUSEOUT, this.handleMouseOut);
     this.listen(element, goog.events.EventType.MOUSEUP, this.handleMouseUp);
+    this.listen(
+        new goog.events.MouseWheelHandler(element),
+        goog.events.MouseWheelHandler.EventType.MOUSEWHEEL,
+        this.handleMouseWheel);
   }
 };
