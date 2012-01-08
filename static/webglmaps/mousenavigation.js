@@ -107,7 +107,7 @@ webglmaps.MouseNavigation.prototype.handleMouseWheel = function(event) {
   }
   if (event.deltaY !== 0) {
     var zoom = this.map_.getZoom();
-    zoom -= goog.math.sign(event.deltaY);
+    zoom -= 0.25 * goog.math.sign(event.deltaY);
     this.map_.setZoom(zoom);
   }
 };
