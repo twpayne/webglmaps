@@ -87,20 +87,6 @@ webglmaps.Layer.prototype.handleTileChange = function(tile) {
 
 
 /**
- * @param {number} z Z.
- */
-webglmaps.Layer.prototype.populate = function(z) {
-  var n = 1 << z;
-  var tileCoord, x, y;
-  for (x = 0; x < n; ++x) {
-    for (y = 0; y < n; ++y) {
-      this.getTile(new webglmaps.TileCoord(z, x, y));
-    }
-  }
-};
-
-
-/**
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
  * @param {number} z Z.
