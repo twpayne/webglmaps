@@ -3,6 +3,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
+goog.require('webglmaps.Program');
 goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileUrl');
 
@@ -87,23 +88,24 @@ webglmaps.Tile.prototype.disposeInternal = function() {
 
 
 /**
- * @param {number} positionAttribLocation Position attribute location.
- * @param {number} texCoordAttribLocation Texture coordinate attribute location.
- * @param {WebGLUniformLocation} textureAttribLocation
- *     Texture attribute location.
+ * @param {number} time Time.
+ * @param {webglmaps.Program} program Program.
+ * @return {boolean} Request animation frame?
  */
-webglmaps.Tile.prototype.draw = function(
-    positionAttribLocation, texCoordAttribLocation, textureAttribLocation) {
+webglmaps.Tile.prototype.render = function(time, program) {
   var gl = this.gl_;
   if (this.hasTexture()) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
-    gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 16, 0);
-    gl.vertexAttribPointer(texCoordAttribLocation, 2, gl.FLOAT, false, 16, 8);
+    gl.vertexAttribPointer(
+        program.aPositionLocation, 2, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribPointer(
+        program.aTexCoordLocation, 2, gl.FLOAT, false, 16, 8);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture_);
-    gl.uniform1i(textureAttribLocation, 0);
+    gl.uniform1i(program.uTextureLocation, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
+  return false;
 };
 
 
