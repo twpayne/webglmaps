@@ -261,9 +261,11 @@ webglmaps.Map.prototype.requestAnimationFrame_ = function() {
  * @param {goog.vec.Vec3.Vec3Like} center Center.
  */
 webglmaps.Map.prototype.setCenter = function(center) {
-  goog.vec.Vec3.setFromArray(this.center_, center);
-  this.updateMatrices_();
-  this.setDirty_();
+  if (!goog.vec.Vec3.equals(this.center_, center)) {
+    goog.vec.Vec3.setFromArray(this.center_, center);
+    this.updateMatrices_();
+    this.setDirty_();
+  }
 };
 
 
@@ -282,9 +284,11 @@ webglmaps.Map.prototype.setDirty_ = function() {
  * @param {number} rotation Rotation.
  */
 webglmaps.Map.prototype.setRotation = function(rotation) {
-  this.rotation_ = rotation;
-  this.updateMatrices_();
-  this.setDirty_();
+  if (this.rotation_ != rotation) {
+    this.rotation_ = rotation;
+    this.updateMatrices_();
+    this.setDirty_();
+  }
 };
 
 
@@ -292,9 +296,12 @@ webglmaps.Map.prototype.setRotation = function(rotation) {
  * @param {number} zoom Zoom.
  */
 webglmaps.Map.prototype.setZoom = function(zoom) {
-  this.zoom_ = zoom;
-  this.updateMatrices_();
-  this.setDirty_();
+  zoom = Math.max(zoom, 0);
+  if (this.zoom_ != zoom) {
+    this.zoom_ = zoom;
+    this.updateMatrices_();
+    this.setDirty_();
+  }
 };
 
 
