@@ -34,3 +34,11 @@ webglmaps.TileCoord = function(z, x, y) {
 webglmaps.TileCoord.prototype.hash = function() {
   return (this.x << this.z) + this.y;
 };
+
+
+/**
+ * @return {string} String.
+ */
+webglmaps.TileCoord.prototype.toString = function() {
+  return [this.z, this.x, this.y].join('/');
+};
