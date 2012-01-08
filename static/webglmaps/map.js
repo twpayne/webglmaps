@@ -1,7 +1,5 @@
 goog.require('goog.array');
 goog.require('goog.asserts');
-goog.require('goog.debug');
-goog.require('goog.debug.Logger');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.events.EventHandler');
@@ -29,12 +27,6 @@ goog.provide('webglmaps.Map');
  * @param {Array.<number>=} opt_bgColor Background color.
  */
 webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
-
-  /**
-   * @private
-   * @type {goog.debug.Logger}
-   */
-  this.logger_ = goog.debug.Logger.getLogger('webglmaps.Map');
 
   /**
    * @private
@@ -236,8 +228,6 @@ webglmaps.Map.prototype.handleLayerChange = function() {
 webglmaps.Map.prototype.render_ = function() {
 
   this.dirty_ = false;
-
-  this.logger_.info('render_');
 
   var gl = this.gl_;
   var time = Date.now();
