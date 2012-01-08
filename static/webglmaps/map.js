@@ -242,7 +242,7 @@ webglmaps.Map.prototype.render_ = function() {
   }, this);
 
   if (dirty) {
-    this.setDirty_();
+    this.requestAnimationFrame_();
   }
 
 };
