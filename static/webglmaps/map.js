@@ -115,13 +115,7 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
   gl.clearColor(clearColor[0], clearColor[1], clearColor[2], 1);
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.SCISSOR_TEST);
-  if (goog.DEBUG) {
-    gl.frontFace(gl.CCW);
-    gl.cullFace(gl.BACK);
-    gl.enable(gl.CULL_FACE);
-  } else {
-    gl.disable(gl.CULL_FACE);
-  }
+  gl.disable(gl.CULL_FACE);
 
   /**
    * @private

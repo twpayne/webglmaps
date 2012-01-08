@@ -19,7 +19,7 @@ goog.debug.ErrorHandler = goog.debug.errorHandlerWeakDep;
  */
 webglmaps.main = function(canvas) {
 
-  var bgColor = goog.color.hexToRgb(goog.DEBUG ? '#f00' : '#fff');
+  var bgColor = goog.color.hexToRgb('#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
 
   var tileUrl = webglmaps.tileurl.fromTemplate(
