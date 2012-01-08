@@ -78,7 +78,7 @@ webglmaps.Tile.prototype.disposeInternal = function() {
 /**
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
- * @return {boolean} Request animation frame?
+ * @return {boolean} Dirty?
  */
 webglmaps.Tile.prototype.render = function(time, program) {
   var gl = this.gl_;
@@ -114,17 +114,17 @@ webglmaps.Tile.prototype.render = function(time, program) {
   } else {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
   }
-  var alpha, requestAnimationFrame;
+  var alpha, dirty;
   if (goog.isNull(this.firstRenderTime_)) {
     this.firstRenderTime_ = time;
     alpha = 0;
-    requestAnimationFrame = true;
+    dirty = true;
   } else if (time - this.firstRenderTime_ < webglmaps.Tile.FADE_IN_PERIOD) {
     alpha = (time - this.firstRenderTime_) / webglmaps.Tile.FADE_IN_PERIOD;
-    requestAnimationFrame = true;
+    dirty = true;
   } else {
     alpha = 1;
-    requestAnimationFrame = false;
+    dirty = false;
   }
   gl.vertexAttribPointer(
       program.aPositionLocation, 2, gl.FLOAT, false, 16, 0);
@@ -134,7 +134,7 @@ webglmaps.Tile.prototype.render = function(time, program) {
   gl.uniform1i(program.uTextureLocation, 0);
   gl.uniform1f(program.uAlphaLocation, alpha);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  return requestAnimationFrame;
+  return dirty;
 };
 
 

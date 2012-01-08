@@ -8,6 +8,7 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.functions');
+goog.require('goog.math');
 goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('webglmaps.Program');
@@ -34,6 +35,36 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @type {goog.debug.Logger}
    */
   this.logger_ = goog.debug.Logger.getLogger('webglmaps.Map');
+
+  /**
+   * @private
+   * @type {boolean}
+   */
+  this.dirty_ = false;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.frozen_ = 0;
+
+  /**
+   * @private
+   * @type {goog.math.Coordinate}
+   */
+  this.center_ = new goog.math.Coordinate(0.5, 0.5);
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.zoom_ = 0;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.rotation_ = 0;
 
   /**
    * @private
@@ -88,7 +119,7 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
   this.program_ = new webglmaps.Program(gl);
   this.program_.use();
 
-  this.render_();
+  this.setDirty_();
 
 };
 goog.inherits(webglmaps.Map, goog.events.EventTarget);
@@ -102,7 +133,7 @@ webglmaps.Map.prototype.addLayer = function(layer) {
   this.layers_.push(layer);
   this.layerChangeListeners_[goog.getUid(layer)] = goog.events.listen(layer,
       goog.events.EventType.CHANGE, goog.bind(this.onLayerChange_, this));
-  this.requestAnimationFrame_();
+  this.setDirty_();
 };
 
 
@@ -124,10 +155,49 @@ webglmaps.Map.prototype.disposeInternal = function() {
 
 
 /**
+ */
+webglmaps.Map.prototype.freeze = function() {
+  ++this.frozen_;
+};
+
+
+/**
+ * @return {goog.math.Coordinate} Center.
+ */
+webglmaps.Map.prototype.getCenter = function() {
+  return new goog.math.Coordinate(this.center_.x, this.center_.y);
+};
+
+
+/**
+ * @return {Element} Element.
+ */
+webglmaps.Map.prototype.getElement = function() {
+  return this.gl_.canvas;
+};
+
+
+/**
+ * @return {number} Rotation.
+ */
+webglmaps.Map.prototype.getRotation = function() {
+  return this.rotation_;
+};
+
+
+/**
+ * @return {number} Rotation.
+ */
+webglmaps.Map.prototype.getZoom = function() {
+  return this.zoom_;
+};
+
+
+/**
  * @private
  */
 webglmaps.Map.prototype.onLayerChange_ = function() {
-  this.requestAnimationFrame_();
+  this.setDirty_();
 };
 
 
@@ -136,47 +206,31 @@ webglmaps.Map.prototype.onLayerChange_ = function() {
  */
 webglmaps.Map.prototype.render_ = function() {
 
+  this.dirty_ = false;
+
   this.logger_.info('render_');
 
   var gl = this.gl_;
   var time = Date.now();
 
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-  var xScale, yScale, xOffset, yOffset;
-  if (gl.drawingBufferWidth > gl.drawingBufferHeight) {
-    xScale = 2 * gl.drawingBufferHeight / gl.drawingBufferWidth;
-    yScale = 2;
-    xOffset = -1 + (gl.drawingBufferWidth - gl.drawingBufferHeight) /
-        gl.drawingBufferWidth;
-    yOffset = -1;
-  } else if (gl.drawingBufferWidth == gl.drawingBufferHeight) {
-    xScale = 2;
-    yScale = 2;
-    xOffset = -1;
-    yOffset = -1;
-  } else {
-    xScale = 2;
-    yScale = 2 * gl.drawingBufferWidth / gl.drawingBufferHeight;
-    xOffset = -1;
-    yOffset = -1 + (gl.drawingBufferHeight - gl.drawingBufferWidth) /
-        gl.drawingBufferHeight;
-  }
-  var mvpMatrix = goog.vec.Mat4.createFromValues(
-      xScale, 0, 0, 0,
-      0, yScale, 0, 0,
-      0, 0, 1, 0,
-      xOffset, yOffset, 0, 1
-  );
+  var mvpMatrix = goog.vec.Mat4.createIdentity();
+  goog.vec.Mat4.scale(mvpMatrix,
+      this.tileSize_ * (2 << this.zoom_) / gl.drawingBufferWidth,
+      this.tileSize_ * (2 << this.zoom_) / gl.drawingBufferHeight, 1);
+  goog.vec.Mat4.rotate(mvpMatrix, this.rotation_, 0, 0, 1);
+  goog.vec.Mat4.translate(mvpMatrix, -this.center_.x, -this.center_.y, 0);
   gl.uniformMatrix4fv(
       this.program_.uMVPMatrixLocation, false, mvpMatrix);
 
-  var requestAnimationFrames = goog.array.map(
-      this.layers_, function(layer) {
-        return layer.render(time, this.program_);
-      }, this);
-  if (goog.array.some(requestAnimationFrames, goog.functions.identity)) {
-    this.requestAnimationFrame_();
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  var dirty = false;
+  goog.array.forEach(this.layers_, function(layer) {
+    dirty = layer.render(time, this.program_) || dirty;
+  }, this);
+
+  if (dirty) {
+    this.setDirty_();
   }
 
 };
@@ -188,4 +242,54 @@ webglmaps.Map.prototype.render_ = function() {
 webglmaps.Map.prototype.requestAnimationFrame_ = function() {
   window.webkitRequestAnimationFrame(
       goog.bind(this.render_, this), this.gl_.canvas);
+};
+
+
+/**
+ * @param {goog.math.Coordinate} center Center.
+ */
+webglmaps.Map.prototype.setCenter = function(center) {
+  this.center_ = center;
+  this.center_.x = goog.math.clamp(this.center_.x, 0, 1);
+  this.center_.y = goog.math.clamp(this.center_.y, 0, 1);
+  this.setDirty_();
+};
+
+
+/**
+ * @private
+ */
+webglmaps.Map.prototype.setDirty_ = function() {
+  this.dirty_ = true;
+  if (this.frozen_ <= 0) {
+    this.requestAnimationFrame_();
+  }
+};
+
+
+/**
+ * @param {number} rotation Rotation.
+ */
+webglmaps.Map.prototype.setRotation = function(rotation) {
+  this.rotation_ = rotation % (2 * Math.PI);
+  this.setDirty_();
+};
+
+
+/**
+ * @param {number} zoom Zoom.
+ */
+webglmaps.Map.prototype.setZoom = function(zoom) {
+  this.zoom_ = zoom;
+  this.setDirty_();
+};
+
+
+/**
+ */
+webglmaps.Map.prototype.thaw = function() {
+  goog.asserts.assert(this.frozen_ > 0);
+  if (--this.frozen_ <= 0) {
+    this.requestAnimationFrame_();
+  }
 };

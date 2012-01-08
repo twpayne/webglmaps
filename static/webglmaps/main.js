@@ -37,7 +37,7 @@ webglmaps.main = function(canvas) {
   var tileUrl = webglmaps.tileurl.fromTemplate(
       'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
   var layer = new webglmaps.Layer(tileUrl);
-  layer.populate(1);
+  layer.populate(0);
   map.addLayer(layer);
 
 };

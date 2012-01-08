@@ -102,15 +102,14 @@ webglmaps.Layer.prototype.populate = function(z) {
 /**
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
- * @return {boolean} Request animation frame?
+ * @return {boolean} Dirty?
  */
 webglmaps.Layer.prototype.render = function(time, program) {
-  var requestAnimationFrame;
+  var dirty = false;
   goog.object.forEach(this.tiles_, function(tile) {
-    requestAnimationFrame =
-        tile.render(time, program) || requestAnimationFrame;
+    dirty = tile.render(time, program) || dirty;
   }, this);
-  return requestAnimationFrame;
+  return dirty;
 };
 
 
