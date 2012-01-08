@@ -6,6 +6,7 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.functions');
+goog.require('goog.math.Box');
 goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
@@ -68,7 +69,13 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @private
    * @type {goog.vec.Mat4.Type}
    */
-  this.mvpMatrix_ = goog.vec.Mat4.create();
+  this.positionToViewportMatrix_ = goog.vec.Mat4.create();
+
+  /**
+   * @private
+   * @type {goog.vec.Mat4.Type}
+   */
+  this.viewportToPositionMatrix_ = goog.vec.Mat4.create();
 
   /**
    * @private
@@ -234,11 +241,28 @@ webglmaps.Map.prototype.render_ = function() {
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  gl.uniformMatrix4fv(this.program_.uMVPMatrixLocation, false, this.mvpMatrix_);
+  gl.uniformMatrix4fv(
+      this.program_.uMVPMatrixLocation, false, this.positionToViewportMatrix_);
+
+  var z = Math.ceil(this.zoom_ - 0.5), n = 1 << z;
+  var xs = new Array(4), ys = new Array(4);
+  var i, position = goog.vec.Vec3.create();
+  for (i = 0; i < 4; ++i) {
+    position[0] = 2 * (i >> 1) - 1;
+    position[1] = 2 * (i & 1) - 1;
+    goog.vec.Mat4.multVec3(this.viewportToPositionMatrix_, position, position);
+    xs[i] = Math.floor(n * position[0]);
+    ys[i] = n - Math.floor(n * position[1]) - 1;
+  }
+  var box = new goog.math.Box(
+      goog.math.clamp(Math.max.apply(null, ys), 0, n - 1),
+      goog.math.clamp(Math.max.apply(null, xs), 0, n - 1),
+      goog.math.clamp(Math.min.apply(null, ys), 0, n - 1),
+      goog.math.clamp(Math.min.apply(null, xs), 0, n - 1));
 
   var dirty = false;
   goog.array.forEach(this.layers_, function(layer) {
-    dirty = layer.render(time, this.program_) || dirty;
+    dirty = layer.render(time, this.program_, z, box) || dirty;
   }, this);
 
   if (dirty) {
@@ -322,7 +346,7 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
 
   var gl = this.gl_;
 
-  var m = this.mvpMatrix_;
+  var m = this.positionToViewportMatrix_;
   goog.vec.Mat4.makeIdentity(m);
   goog.vec.Mat4.scale(m,
       this.tileSize_ * Math.pow(2, this.zoom_ + 1) / gl.drawingBufferWidth,
@@ -330,14 +354,13 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
   goog.vec.Mat4.rotate(m, this.rotation_, 0, 0, 1);
   goog.vec.Mat4.translate(m, -this.center_[0], -this.center_[1], 0);
 
-  var inverseMVPMatrix = goog.vec.Mat4.create();
-  goog.asserts.assert(goog.vec.Mat4.invert(m, inverseMVPMatrix));
+  goog.asserts.assert(goog.vec.Mat4.invert(m, this.viewportToPositionMatrix_));
 
   m = this.elementPixelToPositionMatrix_;
   goog.vec.Mat4.makeIdentity(m);
   goog.vec.Mat4.translate(m, -1, 1, 0);
   goog.vec.Mat4.scale(
       m, 2 / gl.drawingBufferWidth, -2 / gl.drawingBufferHeight, 1);
-  goog.vec.Mat4.multMat(inverseMVPMatrix, m, m);
+  goog.vec.Mat4.multMat(this.viewportToPositionMatrix_, m, m);
 
 };

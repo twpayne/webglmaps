@@ -3,6 +3,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
+goog.require('goog.math.Box');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileCoord');
@@ -69,6 +70,7 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
     return this.tiles_[key];
   }
   var tile = new webglmaps.Tile(tileCoord, this.tileUrl_(tileCoord));
+  tile.setGL(this.gl_);
   this.tileChangeListeners_[goog.getUid(tile)] = goog.events.listen(
       tile, goog.events.EventType.CHANGE, this.handleTileChange, false, this);
   this.tiles_[key] = tile;
@@ -101,13 +103,19 @@ webglmaps.Layer.prototype.populate = function(z) {
 /**
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
+ * @param {number} z Z.
+ * @param {goog.math.Box} box Box.
  * @return {boolean} Dirty?
  */
-webglmaps.Layer.prototype.render = function(time, program) {
+webglmaps.Layer.prototype.render = function(time, program, z, box) {
   var dirty = false;
-  goog.object.forEach(this.tiles_, function(tile) {
-    dirty = tile.render(time, program) || dirty;
-  }, this);
+  var tile, x, y;
+  for (x = box.left; x <= box.right; ++x) {
+    for (y = box.bottom; y <= box.top; ++y) {
+      tile = this.getTile(new webglmaps.TileCoord(z, x, y));
+      dirty = tile.render(time, program) || dirty;
+    }
+  }
   return dirty;
 };
 
