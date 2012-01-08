@@ -24,7 +24,7 @@ webglmaps.main = function(canvas) {
 
   var tileUrl = webglmaps.tileurl.fromTemplate(
       'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
-  var layer = new webglmaps.Layer(tileUrl);
+  var layer = new webglmaps.Layer(tileUrl, undefined, 8);
   map.addLayer(layer);
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);

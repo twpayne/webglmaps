@@ -17,8 +17,10 @@ goog.provide('webglmaps.Layer');
  * @constructor
  * @extends {goog.events.EventTarget}
  * @param {webglmaps.TileUrl} tileUrl Tile URL.
+ * @param {number=} opt_minZ Min Z.
+ * @param {number=} opt_maxZ Max Z.
  */
-webglmaps.Layer = function(tileUrl) {
+webglmaps.Layer = function(tileUrl, opt_minZ, opt_maxZ) {
 
   goog.base(this);
 
@@ -39,6 +41,18 @@ webglmaps.Layer = function(tileUrl) {
    * @type {webglmaps.TileUrl}
    */
   this.tileUrl_ = tileUrl;
+
+  /**
+   * @private
+   * @type {?number}
+   */
+  this.minZ_ = opt_minZ || null;
+
+  /**
+   * @private
+   * @type {?number}
+   */
+  this.maxZ_ = opt_maxZ || null;
 
   /**
    * @private
@@ -65,6 +79,12 @@ webglmaps.Layer.prototype.disposeInternal = function() {
  * @return {webglmaps.Tile} Tile.
  */
 webglmaps.Layer.prototype.getTile = function(tileCoord) {
+  if (!goog.isNull(this.minZ_) && tileCoord.z < this.minZ_) {
+    return null;
+  }
+  if (!goog.isNull(this.maxZ_) && tileCoord.z > this.maxZ_) {
+    return null;
+  }
   var key = tileCoord.toString();
   if (goog.object.containsKey(this.tiles_, key)) {
     return this.tiles_[key];
@@ -85,7 +105,7 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
 webglmaps.Layer.prototype.findInterimTile = function(tileCoord) {
   tileCoord = tileCoord.clone();
   var key, tile, tileLoadingState;
-  while (tileCoord.z > 0) {
+  while (tileCoord.z >= this.minZ_) {
     tileCoord.z -= 1;
     tileCoord.x = Math.floor(tileCoord.x / 2);
     tileCoord.y = Math.floor(tileCoord.y / 2);
