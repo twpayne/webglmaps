@@ -32,6 +32,18 @@ webglmaps.MouseNavigation = function() {
 
   /**
    * @private
+   * @type {number}
+   */
+  this.rotationStep_ = Math.PI / 180;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.zoomStep_ = 0.25;
+
+  /**
+   * @private
    * @type {boolean}
    */
   this.mouseDown_ = false;
@@ -104,12 +116,12 @@ webglmaps.MouseNavigation.prototype.handleMouseWheel = function(event) {
   event.preventDefault();
   if (event.deltaX !== 0) {
     var rotation = this.map_.getRotation();
-    rotation -= goog.math.sign(event.deltaX) * Math.PI / 180;
+    rotation -= goog.math.sign(event.deltaX) * this.rotationStep_;
     this.map_.setRotation(rotation);
   }
   if (event.deltaY !== 0) {
     var zoom = this.map_.getZoom();
-    zoom -= 0.25 * goog.math.sign(event.deltaY);
+    zoom -= goog.math.sign(event.deltaY) * this.zoomStep_;
     this.map_.setZoom(zoom);
   }
 };
