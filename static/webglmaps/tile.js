@@ -28,8 +28,6 @@ webglmaps.Tile = function(gl, tileCoord, tileUrl) {
    */
   this.gl_ = gl;
 
-  this.tileCoord_ = tileCoord;
-
   /**
    * @private
    * @type {WebGLBuffer}
@@ -55,7 +53,7 @@ webglmaps.Tile = function(gl, tileCoord, tileUrl) {
 
   var image = new Image();
   image.crossOrigin = '';
-  image.src = tileUrl(this.tileCoord_);
+  image.src = tileUrl(tileCoord);
 
   /**
    * @private
