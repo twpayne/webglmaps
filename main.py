@@ -32,5 +32,5 @@ def webglmaps_index():
 
 
 if __name__ == '__main__':
-    bottle.DEBUG = True
+    bottle.debug(True)
     bottle.run(reloader=True, server='tornado')
