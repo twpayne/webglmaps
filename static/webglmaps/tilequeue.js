@@ -47,6 +47,7 @@ webglmaps.TileQueue.prototype.enqueue = function(tile) {
     tile.dispatchEvent(new goog.events.Event(goog.events.EventType.DROP));
   } else {
     this.queue_.enqueue(priority, tile);
+    this.update();
   }
 };
 

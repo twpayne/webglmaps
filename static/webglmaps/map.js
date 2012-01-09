@@ -295,6 +295,7 @@ webglmaps.Map.prototype.render_ = function() {
       this.zoom_ = this.targetZoom_;
     }
     this.updateMatrices_();
+    this.tileQueue_.reprioritize();
   }
 
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -325,8 +326,6 @@ webglmaps.Map.prototype.render_ = function() {
   if (animate) {
     this.requestAnimationFrame_();
   }
-
-  this.tileQueue_.update();
 
 };
 
