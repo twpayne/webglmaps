@@ -15,6 +15,12 @@ goog.debug.ErrorHandler = goog.debug.errorHandlerWeakDep;
 
 
 /**
+ * @define {boolean} Use local tileserver.
+ */
+webglmaps.USE_LOCAL_TILESERVER = false;
+
+
+/**
  * @param {HTMLCanvasElement} canvas Canvas.
  */
 webglmaps.main = function(canvas) {
@@ -26,22 +32,20 @@ webglmaps.main = function(canvas) {
   var map = new webglmaps.Map(canvas, 256, bgColor);
 
   var layer, tileUrl;
-  if (true) {
+  if (webglmaps.USE_LOCAL_TILESERVER) {
     tileUrl = webglmaps.tileurl.fromTemplate(
         'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
     layer = new webglmaps.Layer(tileUrl, 0, 8);
   } else {
     tileUrl = webglmaps.tileurl.fromTileUrls([
-      webglmaps.tileurl.fromTemplate('http://mt0.google.com' +
-          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali'),
-      webglmaps.tileurl.fromTemplate('http://mt1.google.com' +
-          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali'),
-      webglmaps.tileurl.fromTemplate('http://mt2.google.com' +
-          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali'),
-      webglmaps.tileurl.fromTemplate('http://mt3.google.com' +
-          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali')
+      webglmaps.tileurl.fromTemplate(
+          'http://a.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+      webglmaps.tileurl.fromTemplate(
+          'http://b.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+      webglmaps.tileurl.fromTemplate(
+          'http://c.tile.openstreetmap.org/{z}/{x}/{y}.png')
     ]);
-    layer = new webglmaps.Layer(tileUrl, 0, 16);
+    layer = new webglmaps.Layer(tileUrl, 0, 18);
   }
   map.addLayer(layer);
   var mouseNavigation = new webglmaps.MouseNavigation();
