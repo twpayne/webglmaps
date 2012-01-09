@@ -3,7 +3,6 @@ goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
-goog.require('goog.math.Box');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileCoord');
@@ -157,18 +156,21 @@ webglmaps.Layer.prototype.handleTileDrop = function(event) {
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
  * @param {number} z Z.
- * @param {goog.math.Box} box Box.
+ * @param {number} x0 X0.
+ * @param {number} y0 Y0.
+ * @param {number} x1 X1.
+ * @param {number} y1 Y1.
  * @return {boolean} Animate?
  */
-webglmaps.Layer.prototype.render = function(time, program, z, box) {
+webglmaps.Layer.prototype.render = function(time, program, z, x0, y0, x1, y1) {
   var animate = false;
   var tile, tileCoord, tileLoadingState, x, y;
   if (this.interimTiles_) {
     /** @type {Object.<number, Object.<string, webglmaps.Tile>>} */
     var tilesToRender = {};
     var interimTile, zKey;
-    for (x = box.left; x <= box.right; ++x) {
-      for (y = box.bottom; y <= box.top; ++y) {
+    for (x = x0; x <= x1; ++x) {
+      for (y = y0; y <= y1; ++y) {
         tileCoord = new webglmaps.TileCoord(z, x, y);
         tile = this.getTile(tileCoord);
         if (goog.isNull(tile)) {
@@ -206,8 +208,8 @@ webglmaps.Layer.prototype.render = function(time, program, z, box) {
       });
     });
   } else {
-    for (x = box.left; x <= box.right; ++x) {
-      for (y = box.bottom; y <= box.top; ++y) {
+    for (x = x0; x <= x1; ++x) {
+      for (y = y0; y <= y1; ++y) {
         tileCoord = new webglmaps.TileCoord(z, x, y);
         tile = this.getTile(tileCoord);
         if (!goog.isNull(tile)) {

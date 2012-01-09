@@ -6,7 +6,6 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.functions');
-goog.require('goog.math.Box');
 goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
@@ -256,15 +255,14 @@ webglmaps.Map.prototype.render_ = function() {
     xs[i] = Math.floor(n * position[0]);
     ys[i] = n - Math.floor(n * position[1]) - 1;
   }
-  var box = new goog.math.Box(
-      goog.math.clamp(Math.max.apply(null, ys), 0, n - 1),
-      goog.math.clamp(Math.max.apply(null, xs), 0, n - 1),
-      goog.math.clamp(Math.min.apply(null, ys), 0, n - 1),
-      goog.math.clamp(Math.min.apply(null, xs), 0, n - 1));
+  var x0 = goog.math.clamp(Math.min.apply(null, xs), 0, n - 1);
+  var y0 = goog.math.clamp(Math.min.apply(null, ys), 0, n - 1);
+  var x1 = goog.math.clamp(Math.max.apply(null, xs), 0, n - 1);
+  var y1 = goog.math.clamp(Math.max.apply(null, ys), 0, n - 1);
 
   var animate = false;
   goog.array.forEach(this.layers_, function(layer) {
-    animate = layer.render(time, this.program_, z, box) || animate;
+    animate = layer.render(time, this.program_, z, x0, y0, x1, y1) || animate;
   }, this);
 
   if (animate) {
