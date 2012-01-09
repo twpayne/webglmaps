@@ -227,4 +227,4 @@ webglmaps.Tile.FADE_IN_PERIOD = 100;
  * @const
  * @type {webglmaps.transitions.TransitionFn}
  */
-webglmaps.Tile.FADE_IN_TRANSITION = webglmaps.transitions.pop;
+webglmaps.Tile.FADE_IN_TRANSITION = webglmaps.transitions.splat;
