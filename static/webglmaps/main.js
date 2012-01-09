@@ -25,9 +25,24 @@ webglmaps.main = function(canvas) {
   var bgColor = goog.color.hexToRgb('#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
 
-  var tileUrl = webglmaps.tileurl.fromTemplate(
-      'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
-  var layer = new webglmaps.Layer(tileUrl, undefined, 8);
+  var layer, tileUrl;
+  if (true) {
+    tileUrl = webglmaps.tileurl.fromTemplate(
+        'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
+    layer = new webglmaps.Layer(tileUrl, 0, 8);
+  } else {
+    tileUrl = webglmaps.tileurl.fromTileUrls([
+      webglmaps.tileurl.fromTemplate('http://mt0.google.com' +
+          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali'),
+      webglmaps.tileurl.fromTemplate('http://mt1.google.com' +
+          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali'),
+      webglmaps.tileurl.fromTemplate('http://mt2.google.com' +
+          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali'),
+      webglmaps.tileurl.fromTemplate('http://mt3.google.com' +
+          '/vt/lyrs=t@128,r@167000000&hl=en&x={x}&y={y}&z={z}&s=Gali')
+    ]);
+    layer = new webglmaps.Layer(tileUrl, 0, 16);
+  }
   map.addLayer(layer);
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);
