@@ -93,7 +93,8 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
   }
   var key = tileCoord.toString();
   if (goog.object.containsKey(this.tiles_, key)) {
-    return this.tiles_[key];
+    return (/** @type {webglmaps.Tile} */
+        goog.object.get(this.tiles_, key));
   }
   var tile = new webglmaps.Tile(
       tileCoord, this.tileUrl_(tileCoord), this.tileQueue_);
@@ -102,7 +103,7 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
       tile, goog.events.EventType.DROP, this.handleTileDrop, false, this);
   goog.events.listen(
       tile, goog.events.EventType.CHANGE, this.handleTileChange, false, this);
-  this.tiles_[key] = tile;
+  goog.object.add(this.tiles_, key, tile);
   return tile;
 };
 
@@ -120,7 +121,8 @@ webglmaps.Layer.prototype.findInterimTile = function(tileCoord) {
     tileCoord.y = Math.floor(tileCoord.y / 2);
     key = tileCoord.toString();
     if (goog.object.containsKey(this.tiles_, key)) {
-      tile = this.tiles_[key];
+      tile = /** @type {webglmaps.Tile} */
+          goog.object.get(this.tiles_, key);
       tileLoadingState = tile.getLoadingState();
       if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
           tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
@@ -147,7 +149,7 @@ webglmaps.Layer.prototype.handleTileDrop = function(event) {
   var tile = (/** @type {webglmaps.Tile} */ event.target);
   var key = tile.tileCoord.toString();
   goog.asserts.assert(goog.object.containsKey(this.tiles_, key));
-  delete this.tiles_[key];
+  goog.object.remove(this.tiles_, key);
   goog.dispose(tile);
 };
 
