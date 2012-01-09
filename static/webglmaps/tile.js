@@ -201,8 +201,10 @@ webglmaps.Tile.prototype.getLoadingState = function() {
  */
 webglmaps.Tile.prototype.setGL = function(gl) {
   if (!goog.isNull(this.gl_)) {
-    gl.deleteBuffer(this.vertexAttribBuffer_);
-    this.vertexAttribBuffer_ = null;
+    if (!goog.isNull(this.vertexAttribBuffer_)) {
+      gl.deleteBuffer(this.vertexAttribBuffer_);
+      this.vertexAttribBuffer_ = null;
+    }
     if (!goog.isNull(this.texture_)) {
       gl.deleteTexture(this.texture_);
       this.texture_ = null;
