@@ -118,10 +118,28 @@ webglmaps.Tile.prototype.getLastFrameIndex = function() {
 
 
 /**
+ * @return {webglmaps.TileLoadingState} Loading state.
+ */
+webglmaps.Tile.prototype.getLoadingState = function() {
+  return this.loadingState_;
+};
+
+
+/**
  * @param {Image} image Image.
  */
 webglmaps.Tile.prototype.handleImageError = function(image) {
   this.loadingState_ = webglmaps.TileLoadingState.ERROR;
+};
+
+
+/**
+ * @param {goog.events.BrowserEvent} event Event.
+ */
+webglmaps.Tile.prototype.handleImageLoad = function(event) {
+  this.image = /** @type {Image} */ event.target;
+  this.loadingState_ = webglmaps.TileLoadingState.FADING_IN;
+  this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE));
 };
 
 
@@ -196,24 +214,6 @@ webglmaps.Tile.prototype.render =
   gl.uniform1f(program.uAlphaLocation, alpha);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   return animate;
-};
-
-
-/**
- * @param {goog.events.BrowserEvent} event Event.
- */
-webglmaps.Tile.prototype.handleImageLoad = function(event) {
-  this.image = /** @type {Image} */ event.currentTarget;
-  this.loadingState_ = webglmaps.TileLoadingState.FADING_IN;
-  this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE, this));
-};
-
-
-/**
- * @return {webglmaps.TileLoadingState} Loading state.
- */
-webglmaps.Tile.prototype.getLoadingState = function() {
-  return this.loadingState_;
 };
 
 

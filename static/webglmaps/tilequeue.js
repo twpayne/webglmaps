@@ -40,31 +40,11 @@ webglmaps.TileQueue = function(map, opt_n) {
 
 /**
  * @param {webglmaps.Tile} tile Tile.
- * @param {Image} image Image.
- */
-webglmaps.TileQueue.prototype.handleTileImageError = function(tile, image) {
-  --this.i_;
-  this.update();
-};
-
-
-/**
- * @param {webglmaps.Tile} tile Tile.
- * @param {Image} image Image.
- */
-webglmaps.TileQueue.prototype.handleTileImageLoad = function(tile, image) {
-  --this.i_;
-  this.update();
-};
-
-
-/**
- * @param {webglmaps.Tile} tile Tile.
  */
 webglmaps.TileQueue.prototype.enqueue = function(tile) {
   var priority = this.getPriority(tile);
   if (goog.isNull(priority)) {
-    tile.dispatchEvent(new goog.events.Event(goog.events.EventType.DROP, tile));
+    tile.dispatchEvent(new goog.events.Event(goog.events.EventType.DROP));
   } else {
     this.queue_.enqueue(priority, tile);
   }
@@ -90,6 +70,26 @@ webglmaps.TileQueue.prototype.getPriority = function(tile) {
   } else {
     return Infinity;
   }
+};
+
+
+/**
+ * @param {webglmaps.Tile} tile Tile.
+ * @param {Image} image Image.
+ */
+webglmaps.TileQueue.prototype.handleTileImageError = function(tile, image) {
+  --this.i_;
+  this.update();
+};
+
+
+/**
+ * @param {webglmaps.Tile} tile Tile.
+ * @param {Image} image Image.
+ */
+webglmaps.TileQueue.prototype.handleTileImageLoad = function(tile, image) {
+  --this.i_;
+  this.update();
 };
 
 
