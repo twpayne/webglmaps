@@ -430,4 +430,4 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
  * @const
  * @type {webglmaps.transitions.TransitionFn}
  */
-webglmaps.Map.ZOOM_TRANSITION = webglmaps.transitions.swing;
+webglmaps.Map.ZOOM_TRANSITION = webglmaps.transitions.superPop;
