@@ -360,7 +360,8 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
   goog.vec.Mat4.rotate(m, this.rotation_, 0, 0, 1);
   goog.vec.Mat4.translate(m, -this.center_[0], -this.center_[1], 0);
 
-  goog.asserts.assert(goog.vec.Mat4.invert(m, this.viewportToPositionMatrix_));
+  var inverted = goog.vec.Mat4.invert(m, this.viewportToPositionMatrix_);
+  goog.asserts.assert(inverted);
 
   m = this.elementPixelToPositionMatrix_;
   goog.vec.Mat4.makeIdentity(m);
