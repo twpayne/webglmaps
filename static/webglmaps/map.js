@@ -249,6 +249,14 @@ webglmaps.Map.prototype.getTargetZoom = function() {
 
 
 /**
+ * @return {number} Tile zoom.
+ */
+webglmaps.Map.prototype.getTileZoom = function() {
+  return Math.ceil(this.zoom_ - 0.5);
+};
+
+
+/**
  * @return {number} Rotation.
  */
 webglmaps.Map.prototype.getZoom = function() {
@@ -294,7 +302,7 @@ webglmaps.Map.prototype.render_ = function() {
   gl.uniformMatrix4fv(
       this.program_.uMVPMatrixLocation, false, this.positionToViewportMatrix_);
 
-  var z = Math.ceil(this.zoom_ - 0.5), n = 1 << z;
+  var tileZoom = this.getTileZoom(), n = 1 << tileZoom;
   var xs = new Array(4), ys = new Array(4);
   var i, position = goog.vec.Vec3.create();
   for (i = 0; i < 4; ++i) {
@@ -310,8 +318,8 @@ webglmaps.Map.prototype.render_ = function() {
   var y1 = goog.math.clamp(Math.max.apply(null, ys), 0, n - 1);
 
   goog.array.forEach(this.layers_, function(layer) {
-    animate = layer.render(
-        this.frameIndex_, time, this.program_, z, x0, y0, x1, y1) || animate;
+    animate = layer.render(this.frameIndex_, time, this.program_, tileZoom,
+        x0, y0, x1, y1) || animate;
   }, this);
 
   if (animate) {

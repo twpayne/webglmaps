@@ -82,7 +82,7 @@ webglmaps.TileQueue.prototype.getPriority = function(tile) {
   var delta = goog.vec.Vec3.clone(tile.tileCoord.getCenter());
   goog.vec.Vec3.subtract(delta, this.map_.getCenter(), delta);
   var magnitudeSquared = goog.vec.Vec3.magnitudeSquared(delta);
-  var mapZoom = Math.ceil(this.map_.getZoom());
+  var mapZoom = Math.ceil(this.map_.getZoom() - 0.5);
   if (tile.tileCoord.z == mapZoom) {
     return magnitudeSquared;
   } else if (tile.tileCoord.z < mapZoom) {

@@ -164,7 +164,7 @@ webglmaps.Layer.prototype.handleTileDrop = function(event) {
  * @param {number} frameIndex Frame index.
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
- * @param {number} z Z.
+ * @param {number} tileZoom Tile zoom.
  * @param {number} x0 X0.
  * @param {number} y0 Y0.
  * @param {number} x1 X1.
@@ -172,7 +172,7 @@ webglmaps.Layer.prototype.handleTileDrop = function(event) {
  * @return {boolean} Animate?
  */
 webglmaps.Layer.prototype.render = function(
-    frameIndex, time, program, z, x0, y0, x1, y1) {
+    frameIndex, time, program, tileZoom, x0, y0, x1, y1) {
   this.lastFrameIndex_ = frameIndex;
   var animate = false;
   var tile, tileCoord, tileLoadingState, x, y;
@@ -182,7 +182,7 @@ webglmaps.Layer.prototype.render = function(
     var interimTile, zKey;
     for (x = x0; x <= x1; ++x) {
       for (y = y0; y <= y1; ++y) {
-        tileCoord = new webglmaps.TileCoord(z, x, y);
+        tileCoord = new webglmaps.TileCoord(tileZoom, x, y);
         tile = this.getTile(tileCoord);
         if (goog.isNull(tile)) {
           tileLoadingState = webglmaps.TileLoadingState.ERROR;
@@ -211,23 +211,24 @@ webglmaps.Layer.prototype.render = function(
         }
       }
     }
-    var tileZs = goog.object.getKeys(tilesToRender);
-    goog.array.sort(tileZs, Number);
-    goog.array.forEachRight(tileZs, function(tileZ) {
-      goog.object.forEach(tilesToRender[tileZ], function(tile) {
-        animate = tile.render(frameIndex, time, program, z) || animate;
+    var tileZooms = goog.object.getKeys(tilesToRender);
+    goog.array.sort(tileZooms, Number);
+    goog.array.forEachRight(tileZooms, function(tileZoom) {
+      goog.object.forEach(tilesToRender[tileZoom], function(tile) {
+        animate = tile.render(frameIndex, time, program, tileZoom) || animate;
       });
     });
   } else {
     for (x = x0; x <= x1; ++x) {
       for (y = y0; y <= y1; ++y) {
-        tileCoord = new webglmaps.TileCoord(z, x, y);
+        tileCoord = new webglmaps.TileCoord(tileZoom, x, y);
         tile = this.getTile(tileCoord);
         if (!goog.isNull(tile)) {
           tileLoadingState = tile.getLoadingState();
           if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
               tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
-            animate = tile.render(frameIndex, time, program, z) || animate;
+            animate = tile.render(frameIndex, time, program, tileZoom) ||
+                animate;
           }
         }
       }

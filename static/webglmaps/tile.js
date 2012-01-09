@@ -129,10 +129,11 @@ webglmaps.Tile.prototype.handleImageError = function(image) {
  * @param {number} frameIndex Frame index.
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
- * @param {number} z Z.
+ * @param {number} tileZoom Tile zoom.
  * @return {boolean} Animate?
  */
-webglmaps.Tile.prototype.render = function(frameIndex, time, program, z) {
+webglmaps.Tile.prototype.render =
+    function(frameIndex, time, program, tileZoom) {
   this.lastFrameIndex_ = frameIndex;
   var gl = this.gl_;
   if (goog.isNull(gl)) {
@@ -168,7 +169,7 @@ webglmaps.Tile.prototype.render = function(frameIndex, time, program, z) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
   }
   var alpha, animate;
-  if (this.tileCoord.z != z) {
+  if (this.tileCoord.z != tileZoom) {
     this.loadingState_ = webglmaps.TileLoadingState.COMPLETE;
     alpha = 1;
     animate = false;
