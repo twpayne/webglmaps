@@ -1,6 +1,5 @@
 goog.require('goog.Disposable');
 goog.require('goog.asserts');
-goog.require('goog.debug.Logger');
 
 goog.provide('webglmaps.Program');
 
@@ -17,12 +16,6 @@ webglmaps.Program = function(gl) {
 
   /**
    * @private
-   * @type {goog.debug.Logger}
-   */
-  this.logger_ = goog.debug.Logger.getLogger('webglmaps.Program');
-
-  /**
-   * @private
    * @type {WebGLRenderingContext}
    */
   this.gl_ = gl;
@@ -31,7 +24,7 @@ webglmaps.Program = function(gl) {
   gl.shaderSource(fragmentShader, webglmaps.Program.FRAGMENT_SHADER_SOURCE);
   gl.compileShader(fragmentShader);
   if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-    this.logger_.severe(gl.getShaderInfoLog(fragmentShader));
+    window.console.log(gl.getShaderInfoLog(fragmentShader));
     goog.asserts.assert(
         gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS));
   }
@@ -46,7 +39,7 @@ webglmaps.Program = function(gl) {
   gl.shaderSource(vertexShader, webglmaps.Program.VERTEX_SHADER_SOURCE);
   gl.compileShader(vertexShader);
   if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-    this.logger_.severe(gl.getShaderInfoLog(vertexShader));
+    window.console.log(gl.getShaderInfoLog(vertexShader));
     goog.asserts.assert(
         gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS));
   }
@@ -62,7 +55,7 @@ webglmaps.Program = function(gl) {
   gl.attachShader(program, vertexShader);
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    this.logger_.severe(gl.getProgramInfoLog(program));
+    window.console.log(gl.getProgramInfoLog(program));
     goog.asserts.assert(gl.getProgramParameter(program, gl.LINK_STATUS));
   }
 
