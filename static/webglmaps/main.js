@@ -35,7 +35,7 @@ webglmaps.main = function(canvas) {
   if (webglmaps.USE_LOCAL_TILESERVER) {
     tileUrl = webglmaps.tileurl.fromTemplate(
         'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
-    layer = new webglmaps.Layer(tileUrl, 0, 8);
+    layer = new webglmaps.Layer(tileUrl);
   } else {
     tileUrl = webglmaps.tileurl.fromTileUrls([
       webglmaps.tileurl.fromTemplate(
