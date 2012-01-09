@@ -61,6 +61,12 @@ webglmaps.Layer = function(tileUrl, opt_minZ, opt_maxZ) {
    */
   this.tiles_ = {};
 
+  /**
+   * @private
+   * @type {boolean}
+   */
+  this.interimTiles_ = true;
+
 };
 goog.inherits(webglmaps.Layer, goog.events.EventTarget);
 
@@ -155,48 +161,65 @@ webglmaps.Layer.prototype.handleTileDrop = function(event) {
  * @return {boolean} Animate?
  */
 webglmaps.Layer.prototype.render = function(time, program, z, box) {
-  /** @type {Object.<number, Object.<string, webglmaps.Tile>>} */
-  var tilesToRender = {};
-  var interimTile, zKey, tile, tileCoord, tileLoadingState, x, y;
-  for (x = box.left; x <= box.right; ++x) {
-    for (y = box.bottom; y <= box.top; ++y) {
-      tileCoord = new webglmaps.TileCoord(z, x, y);
-      tile = this.getTile(tileCoord);
-      if (goog.isNull(tile)) {
-        tileLoadingState = webglmaps.TileLoadingState.ERROR;
-      } else {
-        tileLoadingState = tile.getLoadingState();
-      }
-      if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
-          tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
-        zKey = tile.tileCoord.z.toString();
-        if (!goog.object.containsKey(tilesToRender, zKey)) {
-          tilesToRender[zKey] = {};
+  var animate = false;
+  var tile, tileCoord, tileLoadingState, x, y;
+  if (this.interimTiles_) {
+    /** @type {Object.<number, Object.<string, webglmaps.Tile>>} */
+    var tilesToRender = {};
+    var interimTile, zKey;
+    for (x = box.left; x <= box.right; ++x) {
+      for (y = box.bottom; y <= box.top; ++y) {
+        tileCoord = new webglmaps.TileCoord(z, x, y);
+        tile = this.getTile(tileCoord);
+        if (goog.isNull(tile)) {
+          tileLoadingState = webglmaps.TileLoadingState.ERROR;
+        } else {
+          tileLoadingState = tile.getLoadingState();
         }
-        tilesToRender[zKey][tileCoord.toString()] = tile;
-      }
-      if (tileLoadingState == webglmaps.TileLoadingState.WAITING ||
-          tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
-          tileLoadingState == webglmaps.TileLoadingState.ERROR) {
-        interimTile = this.findInterimTile(tileCoord);
-        if (!goog.isNull(interimTile)) {
-          zKey = interimTile.tileCoord.z.toString();
+        if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
+            tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
+          zKey = tile.tileCoord.z.toString();
           if (!goog.object.containsKey(tilesToRender, zKey)) {
             tilesToRender[zKey] = {};
           }
-          tilesToRender[zKey][interimTile.tileCoord.toString()] = interimTile;
+          tilesToRender[zKey][tileCoord.toString()] = tile;
+        }
+        if (tileLoadingState == webglmaps.TileLoadingState.WAITING ||
+            tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
+            tileLoadingState == webglmaps.TileLoadingState.ERROR) {
+          interimTile = this.findInterimTile(tileCoord);
+          if (!goog.isNull(interimTile)) {
+            zKey = interimTile.tileCoord.z.toString();
+            if (!goog.object.containsKey(tilesToRender, zKey)) {
+              tilesToRender[zKey] = {};
+            }
+            tilesToRender[zKey][interimTile.tileCoord.toString()] = interimTile;
+          }
+        }
+      }
+    }
+    var tileZs = goog.object.getKeys(tilesToRender);
+    goog.array.sort(tileZs, Number);
+    goog.array.forEachRight(tileZs, function(tileZ) {
+      goog.object.forEach(tilesToRender[tileZ], function(tile) {
+        animate = tile.render(time, program, z) || animate;
+      });
+    });
+  } else {
+    for (x = box.left; x <= box.right; ++x) {
+      for (y = box.bottom; y <= box.top; ++y) {
+        tileCoord = new webglmaps.TileCoord(z, x, y);
+        tile = this.getTile(tileCoord);
+        if (!goog.isNull(tile)) {
+          tileLoadingState = tile.getLoadingState();
+          if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
+              tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
+            animate = tile.render(time, program, z) || animate;
+          }
         }
       }
     }
   }
-  var tileZs = goog.object.getKeys(tilesToRender);
-  goog.array.sort(tileZs, Number);
-  var animate = false;
-  goog.array.forEachRight(tileZs, function(tileZ) {
-    goog.object.forEach(tilesToRender[tileZ], function(tile) {
-      animate = tile.render(time, program, z) || animate;
-    });
-  });
   return animate;
 };
 
