@@ -1,7 +1,13 @@
 <!doctype html>
 <html>
   <head>
+%if debug:
     <link rel="stylesheet" href="static/webglmaps/webglmaps.css"/>
+%else:
+    <style>
+%include webglmaps/css
+    </style>
+%end
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 %if debug:

@@ -2,4 +2,5 @@
 /compiler.jar
 /static/closure-library
 /static/webglmaps/deps.js
+/views/webglmaps/css.tpl
 /views/webglmaps/js.tpl

@@ -2,6 +2,7 @@ CLOSURE_LIBRARY=static/closure-library
 COMPILER_JAR=compiler.jar
 TARGETS=\
 	static/webglmaps/deps.js \
+	views/webglmaps/css.tpl \
 	views/webglmaps/js.tpl
 
 .PHONY: all
@@ -10,7 +11,12 @@ all: webglmaps lint
 .PHONY: webglmaps
 webglmaps: webglmaps-debug webglmaps-compiled
 
-webglmaps-compiled: views/webglmaps/js.tpl
+webglmaps-compiled: \
+	views/webglmaps/css.tpl \
+	views/webglmaps/js.tpl
+
+views/webglmaps/css.tpl: static/webglmaps/webglmaps.css
+	cp $< $@
 
 views/webglmaps/js.tpl: \
 	$(filter-out $(TARGETS),$(shell find static/webglmaps -name \*.js)) \
