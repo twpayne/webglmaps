@@ -1,6 +1,8 @@
 Fix webglmaps.utils.requestAnimationFrame
 Fix tile dropping
-Rotate around mouse cursor
 Zoom to/from mouse cursor
 Add tile cache (including freeing textures as separate step from freeing images)
 Layer.findInterimTile should also search lower down the pyramid
+Smooth zoom
+Fix precision problems at high zoom levels
+Vertex shader special effects
