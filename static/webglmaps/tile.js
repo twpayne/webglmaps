@@ -6,6 +6,7 @@ goog.require('webglmaps.Program');
 goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileQueue');
 goog.require('webglmaps.TileUrl');
+goog.require('webglmaps.transitions');
 
 goog.provide('webglmaps.Tile');
 
@@ -161,7 +162,8 @@ webglmaps.Tile.prototype.render = function(time, program, z) {
     alpha = 0;
     animate = true;
   } else if (time - this.firstRenderTime_ < webglmaps.Tile.FADE_IN_PERIOD) {
-    alpha = (time - this.firstRenderTime_) / webglmaps.Tile.FADE_IN_PERIOD;
+    alpha = webglmaps.Tile.FADE_IN_TRANSITION(
+        0, 1, (time - this.firstRenderTime_) / webglmaps.Tile.FADE_IN_PERIOD);
     animate = true;
   } else {
     this.loadingState_ = webglmaps.TileLoadingState.COMPLETE;
@@ -219,3 +221,10 @@ webglmaps.Tile.prototype.setGL = function(gl) {
  * @type {number}
  */
 webglmaps.Tile.FADE_IN_PERIOD = 100;
+
+
+/**
+ * @const
+ * @type {webglmaps.transitions.TransitionFn}
+ */
+webglmaps.Tile.FADE_IN_TRANSITION = webglmaps.transitions.pop;
