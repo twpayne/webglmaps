@@ -65,10 +65,8 @@ webglmaps.TileQueue.prototype.getPriority = function(tile) {
   var mapZoom = Math.ceil(this.map_.getZoom() - 0.5);
   if (tile.tileCoord.z == mapZoom) {
     return magnitudeSquared;
-  } else if (tile.tileCoord.z < mapZoom) {
-    return mapZoom - tile.tileCoord.z + magnitudeSquared;
   } else {
-    return Infinity;
+    return null;
   }
 };
 
