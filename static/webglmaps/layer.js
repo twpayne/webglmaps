@@ -141,9 +141,10 @@ webglmaps.Layer.prototype.findInterimTile = function(tileCoord) {
 
 
 /**
- * @param {webglmaps.Tile} tile Tile.
+ * @param {goog.events.Event} event Event.
  */
-webglmaps.Layer.prototype.handleTileChange = function(tile) {
+webglmaps.Layer.prototype.handleTileChange = function(event) {
+  var tile = /** @type {webglmaps.Tile} */ event.target;
   this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE, this));
 };
 
