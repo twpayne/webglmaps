@@ -145,7 +145,9 @@ webglmaps.Layer.prototype.findInterimTile = function(tileCoord) {
  */
 webglmaps.Layer.prototype.handleTileChange = function(event) {
   var tile = /** @type {webglmaps.Tile} */ event.target;
-  this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE, this));
+  if (tile.getLastFrameIndex() == this.lastFrameIndex_) {
+    this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE));
+  }
 };
 
 
@@ -188,15 +190,12 @@ webglmaps.Layer.prototype.render = function(
         if (goog.isNull(tile)) {
           tileLoadingState = webglmaps.TileLoadingState.ERROR;
         } else {
-          tileLoadingState = tile.getLoadingState();
-        }
-        if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
-            tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
           zKey = tile.tileCoord.z.toString();
           if (!goog.object.containsKey(tilesToRender, zKey)) {
             tilesToRender[zKey] = {};
           }
           tilesToRender[zKey][tileCoord.toString()] = tile;
+          tileLoadingState = tile.getLoadingState();
         }
         if (tileLoadingState == webglmaps.TileLoadingState.WAITING ||
             tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||

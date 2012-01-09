@@ -136,7 +136,9 @@ webglmaps.Tile.prototype.render =
     function(frameIndex, time, program, tileZoom) {
   this.lastFrameIndex_ = frameIndex;
   var gl = this.gl_;
-  if (goog.isNull(gl)) {
+  if (goog.isNull(gl) ||
+      this.loadingState_ == webglmaps.TileLoadingState.ERROR ||
+      this.loadingState_ == webglmaps.TileLoadingState.WAITING) {
     return false;
   }
   if (goog.isNull(this.texture_)) {
