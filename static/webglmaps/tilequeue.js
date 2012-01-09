@@ -63,13 +63,17 @@ webglmaps.TileQueue.prototype.handleTileImageLoad = function(tile, image) {
  */
 webglmaps.TileQueue.prototype.enqueue = function(tile) {
   var priority = this.getPriority(tile);
-  this.queue_.enqueue(priority, tile);
+  if (goog.isNull(priority)) {
+    tile.dispatchEvent(new goog.events.Event(goog.events.EventType.DROP, tile));
+  } else {
+    this.queue_.enqueue(priority, tile);
+  }
 };
 
 
 /**
  * @param {webglmaps.Tile} tile Tile.
- * @return {number} Priority.
+ * @return {?number} Priority.
  */
 webglmaps.TileQueue.prototype.getPriority = function(tile) {
   if (goog.isNull(this.map_)) {
@@ -92,14 +96,15 @@ webglmaps.TileQueue.prototype.getPriority = function(tile) {
 /**
  */
 webglmaps.TileQueue.prototype.reprioritize = function() {
-  var queue = new goog.structs.PriorityQueue();
-  var priority, tile;
-  while (!this.queue_.isEmpty()) {
-    tile = /** @type {webglmaps.Tile} */ this.queue_.remove();
-    priority = this.getPriority(tile);
-    queue.enqueue(priority, tile);
+  if (!this.queue_.isEmpty()) {
+    var queue = this.queue_;
+    this.queue_ = new goog.structs.PriorityQueue();
+    var priority, tile;
+    while (!queue.isEmpty()) {
+      tile = /** @type {webglmaps.Tile} */ queue.remove();
+      this.enqueue(tile);
+    }
   }
-  this.queue_ = queue;
 };
 
 

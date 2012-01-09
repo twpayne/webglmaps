@@ -1,5 +1,6 @@
 Fix webglmaps.utils.requestAnimationFrame
 Fix pan in compiled version
+Fix tile dropping
 Rotate around mouse cursor
 Zoom to/from mouse cursor
 Add tile cache (including freeing textures as separate step from freeing images)

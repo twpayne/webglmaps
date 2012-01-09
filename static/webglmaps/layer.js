@@ -38,12 +38,6 @@ webglmaps.Layer = function(tileUrl, opt_minZ, opt_maxZ) {
   this.tileQueue_ = null;
 
   /**
-   * @type {Object.<number, ?number>}
-   * @private
-   */
-  this.tileChangeListeners_ = {};
-
-  /**
    * @private
    * @type {webglmaps.TileUrl}
    */
@@ -99,7 +93,9 @@ webglmaps.Layer.prototype.getTile = function(tileCoord) {
   var tile = new webglmaps.Tile(
       tileCoord, this.tileUrl_(tileCoord), this.tileQueue_);
   tile.setGL(this.gl_);
-  this.tileChangeListeners_[goog.getUid(tile)] = goog.events.listen(
+  goog.events.listen(
+      tile, goog.events.EventType.DROP, this.handleTileDrop, false, this);
+  goog.events.listen(
       tile, goog.events.EventType.CHANGE, this.handleTileChange, false, this);
   this.tiles_[key] = tile;
   return tile;
@@ -136,6 +132,18 @@ webglmaps.Layer.prototype.findInterimTile = function(tileCoord) {
  */
 webglmaps.Layer.prototype.handleTileChange = function(tile) {
   this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE, this));
+};
+
+
+/**
+ * @param {goog.events.Event} event Event.
+ */
+webglmaps.Layer.prototype.handleTileDrop = function(event) {
+  var tile = (/** @type {webglmaps.Tile} */ event.target);
+  var key = tile.tileCoord.toString();
+  goog.asserts.assert(goog.object.containsKey(this.tiles_, key));
+  delete this.tiles_[key];
+  goog.dispose(tile);
 };
 
 
