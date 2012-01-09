@@ -9,6 +9,15 @@ goog.require('goog.vec.Vec3');
 goog.provide('webglmaps.MouseNavigation');
 
 
+/**
+ * @enum {number}
+ */
+webglmaps.MouseNavigationState = {
+  NONE: 0,
+  PANNING: 1
+};
+
+
 
 /**
  * @constructor
@@ -44,9 +53,9 @@ webglmaps.MouseNavigation = function() {
 
   /**
    * @private
-   * @type {boolean}
+   * @type {webglmaps.MouseNavigationState}
    */
-  this.mouseDown_ = false;
+  this.state_ = webglmaps.MouseNavigationState.NONE;
 
 };
 goog.inherits(webglmaps.MouseNavigation, goog.events.EventHandler);
@@ -57,7 +66,7 @@ goog.inherits(webglmaps.MouseNavigation, goog.events.EventHandler);
  */
 webglmaps.MouseNavigation.prototype.handleMouseDown = function(event) {
   if (event.isMouseActionButton()) {
-    this.mouseDown_ = true;
+    this.state_ = webglmaps.MouseNavigationState.PANNING;
     goog.vec.Vec3.setFromValues(
         this.previousPosition_, event.clientX, event.clientY, 0);
     this.map_.fromElementPixelToPosition(
@@ -70,7 +79,7 @@ webglmaps.MouseNavigation.prototype.handleMouseDown = function(event) {
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
-  if (this.mouseDown_) {
+  if (this.state_ == webglmaps.MouseNavigationState.PANNING) {
     event.preventDefault();
     var position = goog.vec.Vec3.createFromValues(
         event.clientX, event.clientY, 0);
@@ -91,9 +100,9 @@ webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.MouseNavigation.prototype.handleMouseOut = function(event) {
-  if (this.mouseDown_) {
+  if (this.state_ != webglmaps.MouseNavigationState.NONE) {
     event.preventDefault();
-    this.mouseDown_ = false;
+    this.state_ = webglmaps.MouseNavigationState.NONE;
   }
 };
 
@@ -102,9 +111,9 @@ webglmaps.MouseNavigation.prototype.handleMouseOut = function(event) {
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.MouseNavigation.prototype.handleMouseUp = function(event) {
-  if (this.mouseDown_) {
+  if (this.state_ != webglmaps.MouseNavigationState.NONE) {
     event.preventDefault();
-    this.mouseDown_ = false;
+    this.state_ = webglmaps.MouseNavigationState.NONE;
   }
 };
 
