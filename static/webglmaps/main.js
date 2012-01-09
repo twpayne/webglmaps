@@ -19,6 +19,9 @@ goog.debug.ErrorHandler = goog.debug.errorHandlerWeakDep;
  */
 webglmaps.main = function(canvas) {
 
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
   var bgColor = goog.color.hexToRgb('#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
 
