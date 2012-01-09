@@ -27,7 +27,7 @@ webglmaps.TileQueue = function(map, opt_n) {
    * @private
    * @type {number}
    */
-  this.n_ = opt_n || 4;
+  this.n_ = opt_n || 16;
 
   /**
    * @private
