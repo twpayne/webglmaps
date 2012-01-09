@@ -72,6 +72,12 @@ webglmaps.MouseNavigation = function() {
 
   /**
    * @private
+   * @type {number}
+   */
+  this.zoomPeriod_ = 250;
+
+  /**
+   * @private
    * @type {webglmaps.MouseNavigationState}
    */
   this.state_ = webglmaps.MouseNavigationState.NONE;
@@ -165,9 +171,9 @@ webglmaps.MouseNavigation.prototype.handleMouseWheel = function(event) {
     this.map_.setRotation(rotation);
   }
   if (event.deltaY !== 0) {
-    var zoom = this.map_.getZoom();
+    var zoom = this.map_.getTargetZoom();
     zoom -= goog.math.sign(event.deltaY) * this.zoomStep_;
-    this.map_.setZoom(zoom);
+    this.map_.setZoom(zoom, this.zoomPeriod_);
   }
 };
 

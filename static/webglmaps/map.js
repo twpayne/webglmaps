@@ -6,6 +6,7 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.functions');
+goog.require('goog.math');
 goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
@@ -52,6 +53,24 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @type {number}
    */
   this.zoom_ = 0;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.targetZoom_ = 0;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.zoomStartTime_ = 0;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.zoomPeriod_ = 0;
 
   /**
    * @private
@@ -216,6 +235,14 @@ webglmaps.Map.prototype.getRotation = function() {
 
 
 /**
+ * @return {number} Target zoom.
+ */
+webglmaps.Map.prototype.getTargetZoom = function() {
+  return this.targetZoom_;
+};
+
+
+/**
  * @return {number} Rotation.
  */
 webglmaps.Map.prototype.getZoom = function() {
@@ -235,10 +262,25 @@ webglmaps.Map.prototype.handleLayerChange = function() {
  */
 webglmaps.Map.prototype.render_ = function() {
 
+  var animate = false;
+
   this.dirty_ = false;
 
   var gl = this.gl_;
   var time = Date.now();
+
+  if (this.zoom_ != this.targetZoom_) {
+    var delta = time - this.zoomStartTime_;
+    if (delta < this.zoomPeriod_) {
+      this.zoom_ = webglmaps.Map.ZOOM_TRANSITION(
+          this.startZoom_, this.targetZoom_ - this.startZoom_,
+          delta / this.zoomPeriod_);
+      animate = true;
+    } else {
+      this.zoom_ = this.targetZoom_;
+    }
+    this.updateMatrices_();
+  }
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -260,7 +302,6 @@ webglmaps.Map.prototype.render_ = function() {
   var x1 = goog.math.clamp(Math.max.apply(null, xs), 0, n - 1);
   var y1 = goog.math.clamp(Math.max.apply(null, ys), 0, n - 1);
 
-  var animate = false;
   goog.array.forEach(this.layers_, function(layer) {
     animate = layer.render(time, this.program_, z, x0, y0, x1, y1) || animate;
   }, this);
@@ -322,15 +363,27 @@ webglmaps.Map.prototype.setRotation = function(rotation) {
 
 /**
  * @param {number} zoom Zoom.
+ * @param {number=} opt_period Period.
  */
-webglmaps.Map.prototype.setZoom = function(zoom) {
+webglmaps.Map.prototype.setZoom = function(zoom, opt_period) {
   zoom = Math.max(zoom, 0);
-  if (this.zoom_ != zoom) {
+  if (this.zoom_ == zoom) {
+    return;
+  }
+  var period = opt_period || 0;
+  if (period === 0) {
     this.zoom_ = zoom;
+    this.targetZoom_ = zoom;
     this.tileQueue_.reprioritize();
     this.updateMatrices_();
-    this.setDirty_();
+  } else {
+    this.startZoom_ = this.zoom_;
+    this.targetZoom_ = zoom;
+    this.zoomSign_ = goog.math.sign(this.zoom_ - this.targetZoom_);
+    this.zoomStartTime_ = Date.now();
+    this.zoomPeriod_ = period;
   }
+  this.setDirty_();
 };
 
 
@@ -371,3 +424,10 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
   goog.vec.Mat4.multMat(this.viewportToPositionMatrix_, m, m);
 
 };
+
+
+/**
+ * @const
+ * @type {webglmaps.transitions.TransitionFn}
+ */
+webglmaps.Map.ZOOM_TRANSITION = webglmaps.transitions.swing;
