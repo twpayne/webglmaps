@@ -41,6 +41,12 @@ webglmaps.Tile = function(tileCoord, src, opt_tileQueue) {
   this.gl_ = null;
 
   /**
+   * @private
+   * @type {number}
+   */
+  this.lastFrameIndex_ = 0;
+
+  /**
    * @type {webglmaps.TileCoord}
    */
   this.tileCoord = tileCoord;
@@ -104,6 +110,14 @@ webglmaps.Tile.prototype.disposeInternal = function() {
 
 
 /**
+ * @return {number} Last frame index.
+ */
+webglmaps.Tile.prototype.getLastFrameIndex = function() {
+  return this.lastFrameIndex_;
+};
+
+
+/**
  * @param {Image} image Image.
  */
 webglmaps.Tile.prototype.handleImageError = function(image) {
@@ -112,12 +126,14 @@ webglmaps.Tile.prototype.handleImageError = function(image) {
 
 
 /**
+ * @param {number} frameIndex Frame index.
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
  * @param {number} z Z.
  * @return {boolean} Animate?
  */
-webglmaps.Tile.prototype.render = function(time, program, z) {
+webglmaps.Tile.prototype.render = function(frameIndex, time, program, z) {
+  this.lastFrameIndex_ = frameIndex;
   var gl = this.gl_;
   if (goog.isNull(gl)) {
     return false;

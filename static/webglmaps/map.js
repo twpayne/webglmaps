@@ -92,6 +92,12 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
+   * @type {number}
+   */
+  this.frameIndex_ = 0;
+
+  /**
+   * @private
    * @type {goog.vec.Mat4.Type}
    */
   this.positionToViewportMatrix_ = goog.vec.Mat4.create();
@@ -264,6 +270,7 @@ webglmaps.Map.prototype.render_ = function() {
 
   var animate = false;
 
+  ++this.frameIndex_;
   this.dirty_ = false;
 
   var gl = this.gl_;
@@ -303,7 +310,8 @@ webglmaps.Map.prototype.render_ = function() {
   var y1 = goog.math.clamp(Math.max.apply(null, ys), 0, n - 1);
 
   goog.array.forEach(this.layers_, function(layer) {
-    animate = layer.render(time, this.program_, z, x0, y0, x1, y1) || animate;
+    animate = layer.render(
+        this.frameIndex_, time, this.program_, z, x0, y0, x1, y1) || animate;
   }, this);
 
   if (animate) {

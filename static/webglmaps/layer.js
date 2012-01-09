@@ -31,6 +31,12 @@ webglmaps.Layer = function(tileUrl, opt_minZ, opt_maxZ) {
   this.gl_ = null;
 
   /**
+   * @private
+   * @type {number}
+   */
+  this.lastFrameIndex_ = 0;
+
+  /**
    * @type {webglmaps.TileQueue}
    * @private
    */
@@ -155,6 +161,7 @@ webglmaps.Layer.prototype.handleTileDrop = function(event) {
 
 
 /**
+ * @param {number} frameIndex Frame index.
  * @param {number} time Time.
  * @param {webglmaps.Program} program Program.
  * @param {number} z Z.
@@ -164,7 +171,9 @@ webglmaps.Layer.prototype.handleTileDrop = function(event) {
  * @param {number} y1 Y1.
  * @return {boolean} Animate?
  */
-webglmaps.Layer.prototype.render = function(time, program, z, x0, y0, x1, y1) {
+webglmaps.Layer.prototype.render = function(
+    frameIndex, time, program, z, x0, y0, x1, y1) {
+  this.lastFrameIndex_ = frameIndex;
   var animate = false;
   var tile, tileCoord, tileLoadingState, x, y;
   if (this.interimTiles_) {
@@ -206,7 +215,7 @@ webglmaps.Layer.prototype.render = function(time, program, z, x0, y0, x1, y1) {
     goog.array.sort(tileZs, Number);
     goog.array.forEachRight(tileZs, function(tileZ) {
       goog.object.forEach(tilesToRender[tileZ], function(tile) {
-        animate = tile.render(time, program, z) || animate;
+        animate = tile.render(frameIndex, time, program, z) || animate;
       });
     });
   } else {
@@ -218,7 +227,7 @@ webglmaps.Layer.prototype.render = function(time, program, z, x0, y0, x1, y1) {
           tileLoadingState = tile.getLoadingState();
           if (tileLoadingState == webglmaps.TileLoadingState.FADING_IN ||
               tileLoadingState == webglmaps.TileLoadingState.COMPLETE) {
-            animate = tile.render(time, program, z) || animate;
+            animate = tile.render(frameIndex, time, program, z) || animate;
           }
         }
       }
