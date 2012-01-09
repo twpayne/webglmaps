@@ -1,3 +1,4 @@
+goog.require('goog.math');
 goog.require('webglmaps.TileCoord');
 
 goog.provide('webglmaps.TileUrl');
@@ -29,6 +30,7 @@ webglmaps.tileurl.fromTemplate = function(template) {
  */
 webglmaps.tileurl.fromTileUrls = function(tileUrls) {
   return goog.partial(function(tileUrls, tileCoord) {
-    return tileUrls[tileCoord.hash() % tileUrls.length](tileCoord);
+    return tileUrls[goog.math.modulo(tileCoord.hash(),
+                                     tileUrls.length)](tileCoord);
   }, tileUrls);
 };
