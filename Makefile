@@ -43,7 +43,7 @@ static/webglmaps/deps.js: \
 
 .PHONY: lint
 lint:
-	gjslint --strict $(filter-out $(TARGETS),$(shell find externs static -name \*.js))
+	gjslint --strict $(filter-out $(TARGETS),$(shell find externs static/webglmaps -name \*.js))
 
 .PHONY: tests
 tests: pgtools/deps.js
