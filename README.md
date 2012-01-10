@@ -34,7 +34,7 @@ WebGL Maps development happens at <https://github.com/twpayne/webglmaps>.
 
 ### Dependencies
 
-It depends on the [Closure Library](http://code.google.com/closure/library/), and is designed to be built with the [Closure Compiler](http://code.google.com/closure/compiler).
+WebGL Maps depends on the [Closure Library](http://code.google.com/closure/library/), and is designed to be built with the [Closure Compiler](http://code.google.com/closure/compiler).
 
 Code should be written according to the [Google JavaScript Style Guide](http://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml) and checked with the [Closure Linter](http://code.google.com/closure/utilities/).
 
