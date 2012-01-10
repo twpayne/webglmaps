@@ -34,6 +34,12 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @private
    * @type {boolean}
    */
+  this.animating_ = false;
+
+  /**
+   * @private
+   * @type {boolean}
+   */
   this.dirty_ = false;
 
   /**
@@ -156,7 +162,7 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
   this.program_.use();
 
   this.updateMatrices_();
-  this.setDirty_();
+  this.requestRedraw_();
 
 };
 goog.inherits(webglmaps.Map, goog.events.EventTarget);
@@ -171,7 +177,7 @@ webglmaps.Map.prototype.addLayer = function(layer) {
   this.layers_.push(layer);
   this.layerChangeListeners_[goog.getUid(layer)] = goog.events.listen(layer,
       goog.events.EventType.CHANGE, this.handleLayerChange, false, this);
-  this.setDirty_();
+  this.requestRedraw_();
 };
 
 
@@ -267,7 +273,7 @@ webglmaps.Map.prototype.getZoom = function() {
 /**
  */
 webglmaps.Map.prototype.handleLayerChange = function() {
-  this.setDirty_();
+  this.requestRedraw_();
 };
 
 
@@ -278,8 +284,9 @@ webglmaps.Map.prototype.render_ = function() {
 
   var animate = false;
 
-  ++this.frameIndex_;
+  this.animating_ = false;
   this.dirty_ = false;
+  ++this.frameIndex_;
 
   var gl = this.gl_;
   var time = Date.now();
@@ -324,6 +331,7 @@ webglmaps.Map.prototype.render_ = function() {
   }, this);
 
   if (animate) {
+    this.animating_ = true;
     this.requestAnimationFrame_();
   }
 
@@ -340,6 +348,18 @@ webglmaps.Map.prototype.requestAnimationFrame_ = function() {
 
 
 /**
+ * @private
+ */
+webglmaps.Map.prototype.requestRedraw_ = function() {
+  if (this.frozen_ <= 0) {
+    this.render_();
+  } else if (!this.animating_) {
+    this.dirty_ = true;
+  }
+};
+
+
+/**
  * @param {goog.vec.Vec3.Vec3Like} center Center.
  */
 webglmaps.Map.prototype.setCenter = function(center) {
@@ -347,18 +367,7 @@ webglmaps.Map.prototype.setCenter = function(center) {
     goog.vec.Vec3.setFromArray(this.center_, center);
     this.tileQueue_.reprioritize();
     this.updateMatrices_();
-    this.setDirty_();
-  }
-};
-
-
-/**
- * @private
- */
-webglmaps.Map.prototype.setDirty_ = function() {
-  this.dirty_ = true;
-  if (this.frozen_ <= 0) {
-    this.render_();
+    this.requestRedraw_();
   }
 };
 
@@ -371,7 +380,7 @@ webglmaps.Map.prototype.setRotation = function(rotation) {
     this.rotation_ = rotation;
     this.tileQueue_.reprioritize();
     this.updateMatrices_();
-    this.setDirty_();
+    this.requestRedraw_();
   }
 };
 
@@ -398,7 +407,7 @@ webglmaps.Map.prototype.setZoom = function(zoom, opt_period) {
     this.zoomStartTime_ = Date.now();
     this.zoomPeriod_ = period;
   }
-  this.setDirty_();
+  this.requestRedraw_();
 };
 
 
@@ -407,8 +416,9 @@ webglmaps.Map.prototype.setZoom = function(zoom, opt_period) {
 webglmaps.Map.prototype.thaw = function() {
   goog.asserts.assert(this.frozen_ > 0);
   if (--this.frozen_ <= 0) {
-    this.render_();
-    this.tileQueue_.reprioritize();
+    if (this.dirty_ && !this.animating_) {
+      this.render_();
+    }
   }
 };
 

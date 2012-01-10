@@ -7,6 +7,5 @@ Vertex shader special effects
 Exactly calculate tile bounding box when rotated
 Cut up interim tiles
 Handle canvas size changes
-Add animating state to Map
 Remove tile seams
 Make TileQueue.reprioritize idempotent
