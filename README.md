@@ -65,4 +65,12 @@ During development you should regularly run `make` to invoke the compiler and li
 Unit tests are current run through the browser.  Navigate to <http://localhost:8080/tests?debug=1>.  The list of tests is calculated automatically by scanning the contents of the `static/tests` directory.
 
 
+Useful links
+------------
+
+* Check that your web browser is compatible with WebGL: <http://get.webgl.org>.
+
+* WebGL specification: <http://www.khronos.org/registry/webgl/specs/latest/>
+
+
 vim: set spell spelllang=en textwidth=0:
