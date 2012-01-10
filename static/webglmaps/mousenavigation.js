@@ -68,7 +68,7 @@ webglmaps.MouseNavigation = function() {
    * @private
    * @type {number}
    */
-  this.zoomStep_ = 0.25;
+  this.zoomStep_ = 0.5;
 
   /**
    * @private
