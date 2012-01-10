@@ -391,22 +391,12 @@ webglmaps.Map.prototype.setRotation = function(rotation) {
  */
 webglmaps.Map.prototype.setZoom = function(zoom, opt_period) {
   zoom = Math.max(zoom, 0);
-  if (this.zoom_ == zoom) {
-    return;
-  }
   var period = opt_period || 0;
-  if (period === 0) {
-    this.zoom_ = zoom;
-    this.targetZoom_ = zoom;
-    this.tileQueue_.reprioritize();
-    this.updateMatrices_();
-  } else {
-    this.startZoom_ = this.zoom_;
-    this.targetZoom_ = zoom;
-    this.zoomSign_ = goog.math.sign(this.zoom_ - this.targetZoom_);
-    this.zoomStartTime_ = Date.now();
-    this.zoomPeriod_ = period;
-  }
+  this.startZoom_ = this.zoom_;
+  this.targetZoom_ = zoom;
+  this.zoomSign_ = goog.math.sign(this.zoom_ - this.targetZoom_);
+  this.zoomStartTime_ = period === 0 ? 0 : Date.now();
+  this.zoomPeriod_ = period;
   this.requestRedraw_();
 };
 
