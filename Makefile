@@ -1,4 +1,5 @@
 CLOSURE_LIBRARY=static/closure-library
+CLOSURE_LINTER=closure-linter
 COMPILER_JAR=compiler.jar
 TARGETS=\
 	static/webglmaps/deps.js \
@@ -48,8 +49,8 @@ static/webglmaps/deps.js: \
 		--output_file=$@
 
 .PHONY: lint
-lint:
-	gjslint --strict $(filter-out $(TARGETS),$(shell find externs static/webglmaps -name \*.js))
+lint: $(CLOSURE_LINTER)
+	$(CLOSURE_LINTER)/closure_linter/gjslint.py --strict $(filter-out $(TARGETS),$(shell find externs static/webglmaps -name \*.js))
 
 .PHONY: clean
 clean:
@@ -58,6 +59,9 @@ clean:
 $(CLOSURE_LIBRARY):
 	mkdir -p $(dir $@)
 	if [ -e ../closure-library ]; then ln -s ../../closure-library $@ ; else svn checkout http://closure-library.googlecode.com/svn/trunk/ $@ ; fi
+
+$(CLOSURE_LINTER):
+	if [ -e ../closure-linter ]; then ln -s ../closure-linter $@ ; else svn checkout svn checkout http://closure-linter.googlecode.com/svn/trunk/ $@ ; fi
 
 $(COMPILER_JAR):
 	mkdir -p $(dir $@)
