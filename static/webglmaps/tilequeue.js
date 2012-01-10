@@ -112,7 +112,7 @@ webglmaps.TileQueue.prototype.reprioritize = function() {
 webglmaps.TileQueue.prototype.update = function() {
   var image, tile;
   while (this.i_ < this.n_) {
-    tile = this.queue_.remove();
+    tile = /** @type {webglmaps.Tile} */ this.queue_.remove();
     if (!goog.isDef(tile)) {
       break;
     }

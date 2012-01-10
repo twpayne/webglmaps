@@ -180,7 +180,7 @@ webglmaps.Layer.prototype.render = function(
   var animate = false;
   var tile, tileCoord, tileLoadingState, x, y;
   if (this.interimTiles_) {
-    /** @type {Object.<number, Object.<string, webglmaps.Tile>>} */
+    /** @type {Object.<string, Object.<string, webglmaps.Tile>>} */
     var tilesToRender = {};
     var interimTile, zKey;
     for (x = x0; x <= x1; ++x) {
