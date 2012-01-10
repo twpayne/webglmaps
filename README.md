@@ -48,15 +48,15 @@ The project is built with [GNU Make](http://www.gnu.org/software/make/).  Severa
 
 * `make lint` just runs `gjslint` on the source code.
 
-* `make webglmaps-debug` runs the minimum necessary to run WebGL Maps in non-compiled mode.  This is necessary when you modify `goog.require` or `goog.provide` statements.
+* `make debug` runs the minimum necessary to run WebGL Maps in non-compiled mode.  This is necessary when you modify `goog.require` or `goog.provide` statements.
 
-* `make webglmaps-compiled` runs the minimum necessary to run WebGL Maps in compiled mode.  This invokes the Closure Compiler, which can take some time to run.
+* `make compiled` runs the minimum necessary to run WebGL Maps in compiled mode.  This invokes the Closure Compiler, which can take some time to run.
 
 * `make update` updates the all the Closure dependencies (compiler, library and linter) to their very latest versions.  WebGL Maps should not depend on any specific version of these dependencies, so this should be safe to run at any time.
 
 ### Development
 
-It is usually faster and easier to develop with the uncompiled version.  This version is served by the development server at <http://localhost:8080/webglmaps?debug=1>.  Normally, there is no need to re-run `make`, the development server reloads JavaScript and template files automatically.  However, if you modify `goog.require` or `goog.provides` statements then you should run `make webglmaps-debug` to ensure that `static/webglmaps/deps.js` is up-to-date.
+It is usually faster and easier to develop with the uncompiled version.  This version is served by the development server at <http://localhost:8080/webglmaps?debug=1>.  Normally, there is no need to re-run `make`, the development server reloads JavaScript and template files automatically.  However, if you modify `goog.require` or `goog.provides` statements then you should run `make debug` to ensure that `static/webglmaps/deps.js` is up-to-date.
 
 During development you should regularly run `make` to invoke the compiler and linter.  Warnings from the compiler or linter should be considered as errors and fixed before committing.
 

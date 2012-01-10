@@ -10,9 +10,10 @@ TARGETS=\
 all: webglmaps lint
 
 .PHONY: webglmaps
-webglmaps: webglmaps-debug webglmaps-compiled
+webglmaps: debug compiled
 
-webglmaps-compiled: \
+.PHONY: compiled
+compiled: \
 	views/webglmaps/css.tpl \
 	views/webglmaps/js.tpl
 
@@ -37,8 +38,8 @@ views/webglmaps/js.tpl: \
 		--output_mode=compiled \
 		--output_file=$@
 
-.PHONY: webglmaps-debug
-webglmaps-debug: static/webglmaps/deps.js
+.PHONY: debug
+debug: static/webglmaps/deps.js
 
 static/webglmaps/deps.js: \
 	$(filter-out $(TARGETS),$(shell find static/webglmaps -name \*.js)) \
