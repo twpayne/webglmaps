@@ -7,3 +7,6 @@ Exactly calculate tile bounding box when rotated
 Cut up interim tiles
 Remove tile seams
 Make TileQueue.reprioritize idempotent
+Handle lost GL context
+Maybe move tile vertices into map
+Use arrays for tile coords (like goog.vec.Vec3)
