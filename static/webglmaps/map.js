@@ -1,6 +1,7 @@
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom');
+goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
@@ -161,8 +162,10 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
   this.program_ = new webglmaps.Program(gl);
   this.program_.use();
 
-  this.updateMatrices_();
-  this.requestRedraw_();
+  var vsm = new goog.dom.ViewportSizeMonitor();
+  goog.events.listen(
+      vsm, goog.events.EventType.RESIZE, this.handleResize, false, this);
+  this.setSize_(vsm.getSize());
 
 };
 goog.inherits(webglmaps.Map, goog.events.EventTarget);
@@ -267,6 +270,15 @@ webglmaps.Map.prototype.getTileZoom = function() {
  */
 webglmaps.Map.prototype.getZoom = function() {
   return this.zoom_;
+};
+
+
+/**
+ * @param {goog.events.BrowserEvent} event Event.
+ */
+webglmaps.Map.prototype.handleResize = function(event) {
+  var vsm = /** @type {goog.dom.ViewportSizeMonitor} */ event.target;
+  this.setSize_(vsm.getSize());
 };
 
 
@@ -379,6 +391,21 @@ webglmaps.Map.prototype.setRotation = function(rotation) {
   if (this.rotation_ != rotation) {
     this.rotation_ = rotation;
     this.tileQueue_.reprioritize();
+    this.updateMatrices_();
+    this.requestRedraw_();
+  }
+};
+
+
+/**
+ * @param {goog.math.Size} size Size.
+ * @private
+ */
+webglmaps.Map.prototype.setSize_ = function(size) {
+  if (!goog.isNull(this.gl_)) {
+    this.gl_.canvas.width = size.width;
+    this.gl_.canvas.height = size.height;
+    this.gl_.viewport(0, 0, size.width, size.height);
     this.updateMatrices_();
     this.requestRedraw_();
   }

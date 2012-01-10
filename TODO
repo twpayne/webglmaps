@@ -6,6 +6,5 @@ Fix precision problems at high zoom levels
 Vertex shader special effects
 Exactly calculate tile bounding box when rotated
 Cut up interim tiles
-Handle canvas size changes
 Remove tile seams
 Make TileQueue.reprioritize idempotent
