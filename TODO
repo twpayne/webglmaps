@@ -1,4 +1,3 @@
-Fix webglmaps.utils.requestAnimationFrame
 Zoom to/from mouse cursor
 Add tile cache (including freeing textures as separate step from freeing images)
 Layer.findInterimTile should also search lower down the pyramid

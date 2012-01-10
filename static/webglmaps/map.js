@@ -344,18 +344,10 @@ webglmaps.Map.prototype.render_ = function() {
 
   if (animate) {
     this.animating_ = true;
-    this.requestAnimationFrame_();
+    window.myRequestAnimationFrame(
+        goog.bind(this.render_, this), this.gl_.canvas);
   }
 
-};
-
-
-/**
- * @private
- */
-webglmaps.Map.prototype.requestAnimationFrame_ = function() {
-  window.webkitRequestAnimationFrame(
-      goog.bind(this.render_, this), this.gl_.canvas);
 };
 
 
