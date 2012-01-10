@@ -56,6 +56,21 @@ lint: $(CLOSURE_LINTER)
 clean:
 	rm -f $(TARGETS)
 
+.PHONY: update
+update: update-closure-compiler update-closure-library update-closure-linter
+
+.PHONY: update-closure-compiler
+update-closure-compiler:
+	wget -O - http://closure-compiler.googlecode.com/files/compiler-latest.tar.gz | tar -Oxzf - compiler.jar > $(COMPILER_JAR)
+
+.PHONY: update-closure-library
+update-closure-library: $(CLOSURE_LIBRARY)
+	( cd $(CLOSURE_LIBRARY) && svn update )
+
+.PHONY: update-closure-linter
+update-closure-linter: $(CLOSURE_LINTER)
+	( cd $(CLOSURE_LINTER) && svn update )
+
 $(CLOSURE_LIBRARY):
 	mkdir -p $(dir $@)
 	if [ -e ../closure-library ]; then ln -s ../../closure-library $@ ; else svn checkout http://closure-library.googlecode.com/svn/trunk/ $@ ; fi
