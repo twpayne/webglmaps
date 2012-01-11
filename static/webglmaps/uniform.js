@@ -1,7 +1,7 @@
+goog.provide('webglmaps.Uniform');
+
 goog.require('goog.asserts');
 goog.require('goog.vec.Mat4');
-
-goog.provide('webglmaps.Uniform');
 
 
 

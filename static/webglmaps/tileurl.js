@@ -1,8 +1,8 @@
-goog.require('goog.math');
-goog.require('webglmaps.TileCoord');
-
 goog.provide('webglmaps.TileUrl');
 goog.provide('webglmaps.tileurl');
+
+goog.require('goog.math');
+goog.require('webglmaps.TileCoord');
 
 
 /**

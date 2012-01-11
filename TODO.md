@@ -73,10 +73,4 @@ Architecture
 * Abstract out Camera
 
 
-Miscellaneous
--------------
-
-* Order `goog.provide` before `goog.require`
-
-
 vim: set filetype=markdown spell spelllang=en textwidth=0:

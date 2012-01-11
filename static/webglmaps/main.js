@@ -1,11 +1,11 @@
+goog.provide('webglmaps.main');
+
 goog.require('goog.color');
 goog.require('goog.debug.errorHandlerWeakDep');
 goog.require('webglmaps.Layer');
 goog.require('webglmaps.Map');
 goog.require('webglmaps.MouseNavigation');
 goog.require('webglmaps.TileUrl');
-
-goog.provide('webglmaps.main');
 
 
 /**

@@ -1,9 +1,9 @@
+goog.provide('webglmaps.Program');
+
 goog.require('goog.Disposable');
 goog.require('goog.asserts');
 goog.require('webglmaps.FragmentShader');
 goog.require('webglmaps.VertexShader');
-
-goog.provide('webglmaps.Program');
 
 
 

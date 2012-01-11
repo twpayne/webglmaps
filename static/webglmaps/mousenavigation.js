@@ -1,3 +1,5 @@
+goog.provide('webglmaps.MouseNavigation');
+
 goog.require('goog.events.BrowserEvent');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
@@ -5,8 +7,6 @@ goog.require('goog.events.MouseWheelEvent');
 goog.require('goog.events.MouseWheelHandler');
 goog.require('goog.math');
 goog.require('goog.vec.Vec3');
-
-goog.provide('webglmaps.MouseNavigation');
 
 
 /**

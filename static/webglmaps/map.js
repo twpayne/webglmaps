@@ -1,3 +1,5 @@
+goog.provide('webglmaps.Map');
+
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom');
@@ -17,8 +19,6 @@ goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileQueue');
 goog.require('webglmaps.TileUrl');
 goog.require('webglmaps.utils');
-
-goog.provide('webglmaps.Map');
 
 
 

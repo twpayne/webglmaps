@@ -1,6 +1,9 @@
-goog.require('goog.structs.PriorityQueue');
-
 goog.provide('webglmaps.TileQueue');
+
+goog.require('goog.events');
+goog.require('goog.events.EventType');
+goog.require('goog.structs.PriorityQueue');
+goog.require('goog.vec.Vec3');
 
 
 

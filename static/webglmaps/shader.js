@@ -1,10 +1,10 @@
+goog.provide('webglmaps.FragmentShader');
+goog.provide('webglmaps.VertexShader');
+
 goog.require('goog.Disposable');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('webglmaps.Uniform');
-
-goog.provide('webglmaps.FragmentShader');
-goog.provide('webglmaps.VertexShader');
 
 
 

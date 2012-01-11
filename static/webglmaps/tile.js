@@ -1,3 +1,5 @@
+goog.provide('webglmaps.Tile');
+
 goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
@@ -7,8 +9,6 @@ goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileQueue');
 goog.require('webglmaps.TileUrl');
 goog.require('webglmaps.transitions');
-
-goog.provide('webglmaps.Tile');
 
 
 /**
