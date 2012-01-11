@@ -13,6 +13,17 @@ webglmaps.transitions.TransitionFn;
  * @param {number} delta Delta.
  * @return {number} Value.
  */
+webglmaps.transitions.instant = function(base, diff, delta) {
+  return base + diff;
+};
+
+
+/**
+ * @param {number} base Base.
+ * @param {number} diff Diff.
+ * @param {number} delta Delta.
+ * @return {number} Value.
+ */
 webglmaps.transitions.linear = function(base, diff, delta) {
   return base + delta * diff;
 };
