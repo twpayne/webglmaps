@@ -58,7 +58,7 @@ webglmaps.TileLayer = function(tileUrl, opt_minZ, opt_maxZ) {
 
   /**
    * @private
-   * @type {Object.<string, webglmaps.Tile>}
+   * @type {Object.<webglmaps.TileCoord, webglmaps.Tile>}
    */
   this.tiles_ = {};
 
@@ -88,14 +88,13 @@ webglmaps.TileLayer.prototype.disposeInternal = function() {
  */
 webglmaps.TileLayer.prototype.findInterimTile = function(tileCoord) {
   tileCoord = tileCoord.clone();
-  var key, tile;
+  var tile;
   while (tileCoord.z >= this.minZ_) {
     tileCoord.z -= 1;
     tileCoord.x = Math.floor(tileCoord.x / 2);
     tileCoord.y = Math.floor(tileCoord.y / 2);
-    key = tileCoord.toString();
-    if (goog.object.containsKey(this.tiles_, key)) {
-      tile = /** @type {webglmaps.Tile} */ goog.object.get(this.tiles_, key);
+    if (tileCoord in this.tiles_) {
+      tile = this.tiles_[tileCoord];
       if (tile.isLoaded()) {
         return tile;
       }
@@ -133,9 +132,9 @@ webglmaps.TileLayer.prototype.getTile = function(tileCoord, tileQueue) {
   if (!goog.isNull(this.maxZ_) && tileCoord.z > this.maxZ_) {
     return null;
   }
-  var key = tileCoord.toString(), tile;
-  if (goog.object.containsKey(this.tiles_, key)) {
-    tile = /** @type {webglmaps.Tile} */ goog.object.get(this.tiles_, key);
+  var tile;
+  if (tileCoord in this.tiles_) {
+    tile = this.tiles_[tileCoord];
   } else {
     tile = new webglmaps.Tile(
         tileCoord.clone(), this.tileUrl_(tileCoord), this.crossDomain_);
@@ -144,7 +143,8 @@ webglmaps.TileLayer.prototype.getTile = function(tileCoord, tileQueue) {
     goog.events.listenOnce(
         tile, goog.events.EventType.DROP, this.handleTileDrop, false, this);
     tile.setGL(this.gl_);
-    goog.object.add(this.tiles_, key, tile);
+    goog.asserts.assert(!(tileCoord in this.tiles_));
+    this.tiles_[tileCoord] = tile;
     tileQueue.enqueue(tile);
   }
   return tile;
@@ -167,9 +167,8 @@ webglmaps.TileLayer.prototype.handleTileChange = function(event) {
  */
 webglmaps.TileLayer.prototype.handleTileDrop = function(event) {
   var tile = /** @type {webglmaps.Tile} */ event.target;
-  var key = tile.tileCoord.toString();
-  goog.asserts.assert(goog.object.containsKey(this.tiles_, key));
-  goog.object.remove(this.tiles_, key);
+  goog.asserts.assert(tile.tileCoord in this.tiles_);
+  delete this.tiles_[tile.tileCoord];
   goog.dispose(tile);
 };
 

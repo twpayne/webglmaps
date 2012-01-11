@@ -194,7 +194,7 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
-   * @type {Object.<string, webglmaps.TileVertices>}
+   * @type {Object.<webglmaps.TileCoord, webglmaps.TileVertices>}
    */
   this.tileVertices_ = {};
 
@@ -297,15 +297,11 @@ webglmaps.Map.prototype.getTargetZoom = function() {
  * @param {webglmaps.TileCoord} tileCoord Tile coord.
  */
 webglmaps.Map.prototype.bindTileVertices = function(tileCoord) {
-  var key = tileCoord.toString();
-  var tileVertices;
-  if (goog.object.containsKey(this.tileVertices_, key)) {
-    tileVertices = /** @type {webglmaps.TileVertices} */
-        goog.object.get(this.tileVertices_, key);
-    tileVertices.bind();
+  if (tileCoord in this.tileVertices_) {
+    this.tileVertices_[tileCoord].bind();
   } else {
-    tileVertices = new webglmaps.TileVertices(this.gl_, tileCoord);
-    goog.object.add(this.tileVertices_, key, tileVertices);
+    this.tileVertices_[tileCoord] =
+        new webglmaps.TileVertices(this.gl_, tileCoord);
   }
 };
 
@@ -469,7 +465,7 @@ webglmaps.Map.prototype.renderTileLayerWithInterimTiles_ =
       if (useInterimTile) {
         tile = tileLayer.findInterimTile(tileCoord);
         if (!goog.isNull(tile)) {
-          if (!goog.object.containsKey(tilesToRender, tile.tileCoord.z)) {
+          if (!(tile.tileCoord.z in tilesToRender)) {
             tilesToRender[tile.tileCoord.z] = {};
           }
           tilesToRender[tile.tileCoord.z][tile.tileCoord] = tile;
