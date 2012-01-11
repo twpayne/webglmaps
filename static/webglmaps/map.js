@@ -421,6 +421,102 @@ webglmaps.Map.prototype.render_ = function() {
  */
 webglmaps.Map.prototype.renderTileLayer_ =
     function(tileLayer, z, x0, y0, x1, y1) {
+  if (tileLayer.getRenderInterimTiles()) {
+    return this.renderTileLayerWithInterimTiles_(tileLayer, z, x0, y0, x1, y1);
+  } else {
+    return this.renderTileLayerWithoutInterimTiles_(
+        tileLayer, z, x0, y0, x1, y1);
+  }
+};
+
+
+/**
+ * @param {webglmaps.TileLayer} tileLayer Tile layer.
+ * @param {number} z Z.
+ * @param {number} x0 X0.
+ * @param {number} y0 Y0.
+ * @param {number} x1 X1.
+ * @param {number} y1 Y1.
+ * @return {boolean} Animate?
+ * @private
+ */
+webglmaps.Map.prototype.renderTileLayerWithInterimTiles_ =
+    function(tileLayer, z, x0, y0, x1, y1) {
+  var gl = this.gl_;
+  var animate = false;
+  var program = this.program_, tileQueue = this.tileQueue_, time = this.time_;
+  var tileCoord = new webglmaps.TileCoord(z, 0, 0);
+  /** @type {Object.<number, Object.<webglmaps.TileCoord, webglmaps.Tile>>} */
+  var tilesToRender = {};
+  tilesToRender[z] = {};
+  var alpha, tile, timeSinceFirstUsed, useInterimTile, x, y;
+  tileLayer.setUsedTime(time);
+  for (x = x0; x <= x1; ++x) {
+    tileCoord.x = x;
+    for (y = y0; y <= y1; ++y) {
+      tileCoord.y = y;
+      tile = tileLayer.getTile(tileCoord, tileQueue);
+      useInterimTile = true;
+      if (!goog.isNull(tile)) {
+        tile.setUsedTime(time);
+        if (tile.isLoaded()) {
+          tilesToRender[z][tileCoord] = tile;
+          if (time - tile.getFirstUsedTime() >= webglmaps.TILE_FADE_IN_PERIOD) {
+            useInterimTile = false;
+          }
+        }
+      }
+      if (useInterimTile) {
+        tile = tileLayer.findInterimTile(tileCoord);
+        if (!goog.isNull(tile)) {
+          if (!goog.object.containsKey(tilesToRender, tile.tileCoord.z)) {
+            tilesToRender[tile.tileCoord.z] = {};
+          }
+          tilesToRender[tile.tileCoord.z][tile.tileCoord] = tile;
+        }
+      }
+    }
+  }
+  var tileZooms = goog.object.getKeys(tilesToRender);
+  goog.array.sort(tileZooms, Number);
+  goog.array.forEachRight(tileZooms, function(tileZoom) {
+    goog.object.forEach(tilesToRender[tileZoom], function(tile) {
+      var timeSinceFirstUsed = time - tile.getFirstUsedTime();
+      var alpha;
+      if (tile.tileCoord.z == z &&
+          timeSinceFirstUsed < webglmaps.TILE_FADE_IN_PERIOD) {
+        alpha = webglmaps.TILE_FADE_IN_TRANSITION(
+            0, 1, timeSinceFirstUsed / webglmaps.TILE_FADE_IN_PERIOD);
+        animate = true;
+      } else {
+        alpha = 1;
+      }
+      tile.texture.bind();
+      this.bindTileVertices(tile.tileCoord);
+      program.position.pointer(2, gl.FLOAT, false, 16, 0);
+      program.texCoord.pointer(2, gl.FLOAT, false, 16, 8);
+      gl.activeTexture(gl.TEXTURE0);
+      program.textureUniform.set1i(0);
+      program.alphaUniform.set1f(alpha);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }, this);
+  }, this);
+  return animate;
+};
+
+
+/**
+ * @param {webglmaps.TileLayer} tileLayer Tile layer.
+ * @param {number} z Z.
+ * @param {number} x0 X0.
+ * @param {number} y0 Y0.
+ * @param {number} x1 X1.
+ * @param {number} y1 Y1.
+ * @return {boolean} Animate?
+ * @private
+ */
+webglmaps.Map.prototype.renderTileLayerWithoutInterimTiles_ =
+    function(tileLayer, z, x0, y0, x1, y1) {
   var gl = this.gl_;
   var animate = false;
   var program = this.program_, tileQueue = this.tileQueue_, time = this.time_;

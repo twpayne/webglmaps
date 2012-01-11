@@ -42,7 +42,7 @@ webglmaps.TileLayer = function(tileUrl, opt_minZ, opt_maxZ) {
    * @private
    * @type {?number}
    */
-  this.minZ_ = opt_minZ || null;
+  this.minZ_ = opt_minZ || 0;
 
   /**
    * @private
@@ -62,6 +62,12 @@ webglmaps.TileLayer = function(tileUrl, opt_minZ, opt_maxZ) {
    */
   this.tiles_ = {};
 
+  /**
+   * @private
+   * @type {boolean}
+   */
+  this.renderWithInterimTiles_ = true;
+
 };
 goog.inherits(webglmaps.TileLayer, goog.events.EventTarget);
 
@@ -77,10 +83,41 @@ webglmaps.TileLayer.prototype.disposeInternal = function() {
 
 
 /**
+ * @param {webglmaps.TileCoord} tileCoord Tile coord.
+ * @return {webglmaps.Tile} Tile.
+ */
+webglmaps.TileLayer.prototype.findInterimTile = function(tileCoord) {
+  tileCoord = tileCoord.clone();
+  var key, tile;
+  while (tileCoord.z >= this.minZ_) {
+    tileCoord.z -= 1;
+    tileCoord.x = Math.floor(tileCoord.x / 2);
+    tileCoord.y = Math.floor(tileCoord.y / 2);
+    key = tileCoord.toString();
+    if (goog.object.containsKey(this.tiles_, key)) {
+      tile = /** @type {webglmaps.Tile} */ goog.object.get(this.tiles_, key);
+      if (tile.isLoaded()) {
+        return tile;
+      }
+    }
+  }
+  return null;
+};
+
+
+/**
  * @return {number} Last used time.
  */
 webglmaps.TileLayer.prototype.getLastUsedTime = function() {
   return this.lastUsedTime_;
+};
+
+
+/**
+ * @return {boolean} Render with interim tiles.
+ */
+webglmaps.TileLayer.prototype.getRenderInterimTiles = function() {
+  return this.renderWithInterimTiles_;
 };
 
 
