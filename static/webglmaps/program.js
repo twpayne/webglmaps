@@ -2,17 +2,21 @@ goog.provide('webglmaps.Program');
 
 goog.require('goog.Disposable');
 goog.require('goog.asserts');
-goog.require('webglmaps.FragmentShader');
-goog.require('webglmaps.VertexShader');
+goog.require('webglmaps.shader.Fragment');
+goog.require('webglmaps.shader.Vertex');
+goog.require('webglmaps.shader.fragment.Default');
+goog.require('webglmaps.shader.vertex.Default');
 
 
 
 /**
  * @constructor
  * @extends {goog.Disposable}
- * @param {WebGLRenderingContext} gl WebGL rendering context.
+ * @param {WebGLRenderingContext} gl GL.
+ * @param {webglmaps.shader.Fragment=} opt_fragmentShader Fragment shader.
+ * @param {webglmaps.shader.Vertex=} opt_vertexShader Vertex shader.
  */
-webglmaps.Program = function(gl) {
+webglmaps.Program = function(gl, opt_fragmentShader, opt_vertexShader) {
 
   goog.base(this);
 
@@ -24,18 +28,18 @@ webglmaps.Program = function(gl) {
 
   /**
    * @private
-   * @type {webglmaps.FragmentShader}
+   * @type {webglmaps.shader.Fragment}
    */
   this.fragmentShader_ =
-      new webglmaps.FragmentShader(webglmaps.Program.FRAGMENT_SHADER_SOURCE);
+      opt_fragmentShader || new webglmaps.shader.fragment.Default();
   this.fragmentShader_.setGL(gl);
 
   /**
    * @private
-   * @type {webglmaps.VertexShader}
+   * @type {webglmaps.shader.Vertex}
    */
   this.vertexShader_ =
-      new webglmaps.VertexShader(webglmaps.Program.VERTEX_SHADER_SOURCE);
+      opt_vertexShader || new webglmaps.shader.vertex.Default();
   this.vertexShader_.setGL(gl);
 
   var program = gl.createProgram();
@@ -122,186 +126,3 @@ webglmaps.Program.prototype.use = function() {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 };
-
-
-/**
- * @const
- * @type {string}
- * https://github.com/evanw/glfx.js
- */
-webglmaps.Program.COLOR_HALFTONE_FRAGMENT_SHADER_SOURCE = [
-  'precision mediump float;',
-  '',
-  'uniform float uAlpha;',
-  'uniform sampler2D uTexture;',
-  '',
-  'varying vec2 vTexCoord;',
-  '',
-  'const vec2 center = vec2(0.5, 0.5);',
-  'const float angle = 0.0;',
-  'const float scale = 0.5;',
-  'const vec2 texSize = vec2(256.0, 256.0);',
-  '',
-  'float pattern(float angle) {',
-  '    float s = sin(angle), c = cos(angle);',
-  '    vec2 tex = vTexCoord * texSize - center;',
-  '    vec2 point = vec2(',
-  '        c * tex.x - s * tex.y,',
-  '        s * tex.x + c * tex.y',
-  '    ) * scale;',
-  '    return (sin(point.x) * sin(point.y)) * 4.0;',
-  '}',
-  '',
-  'void main() {',
-  '    vec4 color = texture2D(uTexture, vTexCoord);',
-  '    vec3 cmy = 1.0 - color.rgb;',
-  '    float k = min(cmy.x, min(cmy.y, cmy.z));',
-  '    cmy = (cmy - k) / (1.0 - k);',
-  '    cmy = clamp(cmy * 10.0 - 3.0 + vec3(pattern(angle + 0.26179),',
-  '                                        pattern(angle + 1.30899), ',
-  '                                        pattern(angle)), 0.0, 1.0);',
-  '    k = clamp(k * 10.0 - 5.0 + pattern(angle + 0.78539), 0.0, 1.0);',
-  '    gl_FragColor = vec4(1.0 - cmy - k, uAlpha);',
-  '}'
-].join('\n');
-
-
-/**
- * @const
- * @type {string}
- */
-webglmaps.Program.DEFAULT_FRAGMENT_SHADER_SOURCE = [
-  'precision mediump float;',
-  '',
-  'uniform float uAlpha;',
-  'uniform sampler2D uTexture;',
-  '',
-  'varying vec2 vTexCoord;',
-  '',
-  'void main(void) {',
-  '  gl_FragColor = vec4(vec3(texture2D(uTexture, vTexCoord)), uAlpha);',
-  '}'
-].join('\n');
-
-
-/**
- * @const
- * @type {string}
- */
-webglmaps.Program.GRAYSCALE_FRAGMENT_SHADER_SOURCE = [
-  'precision mediump float;',
-  '',
-  'uniform float uAlpha;',
-  'uniform sampler2D uTexture;',
-  '',
-  'varying vec2 vTexCoord;',
-  '',
-  'void main(void) {',
-  '  vec4 fragColor = texture2D(uTexture, vTexCoord);',
-  '  float luminance = 0.30 * fragColor.r + ',
-  '                    0.59 * fragColor.g + ',
-  '                    0.11 * fragColor.b;',
-  '  gl_FragColor = vec4(luminance, luminance, luminance, uAlpha);',
-  '}'
-].join('\n');
-
-
-/**
- * @const
- * @type {string}
- * https://github.com/evanw/glfx.js
- */
-webglmaps.Program.HEXAGONAL_PIXELATE_FRAGMENT_SHADER_SOURCE = [
-  'precision mediump float;',
-  '',
-  'uniform float uAlpha;',
-  'uniform sampler2D uTexture;',
-  '',
-  'varying vec2 vTexCoord;',
-  '',
-  'const vec2 center = vec2(0.5, 0.5);',
-  'const float scale = 8.0;',
-  'const vec2 texSize = vec2(256.0, 256.0);',
-  '',
-  'void main() {',
-  '    vec2 tex = (vTexCoord * texSize - center) / scale;',
-  '    tex.y /= 0.866025404;',
-  '    tex.x -= tex.y * 0.5;',
-  '    ',
-  '    vec2 a;',
-  '    if (tex.x + tex.y - floor(tex.x) - floor(tex.y) < 1.0)',
-  '       a = vec2(floor(tex.x), floor(tex.y));',
-  '    else a = vec2(ceil(tex.x), ceil(tex.y));',
-  '    vec2 b = vec2(ceil(tex.x), floor(tex.y));',
-  '    vec2 c = vec2(floor(tex.x), ceil(tex.y));',
-  '    ',
-  '    vec3 TEX = vec3(tex.x, tex.y, 1.0 - tex.x - tex.y);',
-  '    vec3 A = vec3(a.x, a.y, 1.0 - a.x - a.y);',
-  '    vec3 B = vec3(b.x, b.y, 1.0 - b.x - b.y);',
-  '    vec3 C = vec3(c.x, c.y, 1.0 - c.x - c.y);',
-  '    ',
-  '    float alen = length(TEX - A);',
-  '    float blen = length(TEX - B);',
-  '    float clen = length(TEX - C);',
-  '    ',
-  '    vec2 choice;',
-  '    if (alen < blen) {',
-  '        if (alen < clen) choice = a;',
-  '        else choice = c;',
-  '    } else {',
-  '        if (blen < clen) choice = b;',
-  '        else choice = c;',
-  '    }',
-  '    ',
-  '    choice.x += choice.y * 0.5;',
-  '    choice.y *= 0.866025404;',
-  '    choice *= scale / texSize;',
-  '    gl_FragColor = vec4(vec3(texture2D(uTexture,',
-  '                                       choice + center / texSize)),',
-  '                        uAlpha);',
-  '}'
-].join('\n');
-
-
-/**
- * @const
- * @type {string}
- */
-webglmaps.Program.INVERT_FRAGMENT_SHADER_SOURCE = [
-  'precision mediump float;',
-  '',
-  'uniform float uAlpha;',
-  'uniform sampler2D uTexture;',
-  '',
-  'varying vec2 vTexCoord;',
-  '',
-  'void main(void) {',
-  '  gl_FragColor = vec4(1.0 - vec3(texture2D(uTexture, vTexCoord)), uAlpha);',
-  '}'
-].join('\n');
-
-
-/**
- * @type {string}
- */
-webglmaps.Program.FRAGMENT_SHADER_SOURCE =
-    webglmaps.Program.DEFAULT_FRAGMENT_SHADER_SOURCE;
-
-
-/**
- * @const
- * @type {string}
- */
-webglmaps.Program.VERTEX_SHADER_SOURCE = [
-  'attribute vec2 aPosition;',
-  'attribute vec2 aTexCoord;',
-  '',
-  'uniform mat4 uMVPMatrix;',
-  '',
-  'varying vec2 vTexCoord;',
-  '',
-  'void main(void) {',
-  '  gl_Position = uMVPMatrix * vec4(aPosition, 0.0, 1.0);',
-  '  vTexCoord = aTexCoord;',
-  '}'
-].join('\n');

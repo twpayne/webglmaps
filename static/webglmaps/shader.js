@@ -1,5 +1,4 @@
-goog.provide('webglmaps.FragmentShader');
-goog.provide('webglmaps.VertexShader');
+goog.provide('webglmaps.Shader');
 
 goog.require('goog.Disposable');
 goog.require('goog.array');
@@ -13,7 +12,6 @@ goog.require('webglmaps.Uniform');
  * @extends {goog.Disposable}
  * @param {string} source Source.
  * @param {Array.<webglmaps.Uniform>=} opt_uniforms Uniforms.
- * @protected
  */
 webglmaps.Shader = function(source, opt_uniforms) {
 
@@ -114,52 +112,4 @@ webglmaps.Shader.prototype.setProgram = function(program) {
   goog.array.forEach(this.uniforms_, function(uniform) {
     uniform.setProgram(program);
   });
-};
-
-
-
-/**
- * @constructor
- * @extends {webglmaps.Shader}
- * @param {string} source Source.
- * @param {Array.<webglmaps.Uniform>=} opt_uniforms Uniforms.
- */
-webglmaps.FragmentShader = function(source, opt_uniforms) {
-  goog.base(this, source, opt_uniforms);
-};
-goog.inherits(webglmaps.FragmentShader, webglmaps.Shader);
-
-
-/**
- * @protected
- * @return {WebGLShader} Shader.
- */
-webglmaps.FragmentShader.prototype.create = function() {
-  var gl = this.gl_;
-  goog.asserts.assert(!goog.isNull(gl));
-  return gl.createShader(gl.FRAGMENT_SHADER);
-};
-
-
-
-/**
- * @constructor
- * @extends {webglmaps.Shader}
- * @param {string} source Source.
- * @param {Array.<webglmaps.Uniform>=} opt_uniforms Uniforms.
- */
-webglmaps.VertexShader = function(source, opt_uniforms) {
-  goog.base(this, source, opt_uniforms);
-};
-goog.inherits(webglmaps.VertexShader, webglmaps.Shader);
-
-
-/**
- * @protected
- * @return {WebGLShader} Shader.
- */
-webglmaps.VertexShader.prototype.create = function() {
-  var gl = this.gl_;
-  goog.asserts.assert(!goog.isNull(gl));
-  return gl.createShader(gl.VERTEX_SHADER);
 };
