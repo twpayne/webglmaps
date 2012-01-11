@@ -28,8 +28,6 @@ Portability
 Quality
 -------
 
-* Add interim tiles
-
 * Fix tile seams (requires careful design of blending between image tiles and clear color)
 
 * Fix precision problems at high zoom levels (might require different projections at different zoom levels)
@@ -45,10 +43,6 @@ Performance
 * Add view frustum culling
 
 * Cut up interim tiles
-
-* Use arrays for tile coords (like `goog.vec.Vec3`)
-
-* Implement and use `goog.vec.Vec2`
 
 * Request animation frame earlier in `Map.render_` (
 
@@ -69,8 +63,6 @@ Architecture
 * Refactor :-)
 
 * Add ICacheable interface and generic LRU cache
-
-* Map should manage vertex buffers
 
 
 vim: set filetype=markdown spell spelllang=en textwidth=0:
