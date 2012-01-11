@@ -124,12 +124,6 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @private
    * @type {number}
    */
-  this.frameIndex_ = 0;
-
-  /**
-   * @private
-   * @type {number}
-   */
   this.time_ = 0;
 
   /**
@@ -351,7 +345,6 @@ webglmaps.Map.prototype.render_ = function() {
 
   this.animating_ = false;
   this.dirty_ = false;
-  ++this.frameIndex_;
   this.time_ = Date.now();
 
   var gl = this.gl_;
