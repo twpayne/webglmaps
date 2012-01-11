@@ -72,7 +72,5 @@ Architecture
 
 * Map should manage vertex buffers
 
-* Abstract out Camera
-
 
 vim: set filetype=markdown spell spelllang=en textwidth=0:

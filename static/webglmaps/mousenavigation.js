@@ -7,6 +7,8 @@ goog.require('goog.events.MouseWheelEvent');
 goog.require('goog.events.MouseWheelHandler');
 goog.require('goog.math');
 goog.require('goog.vec.Vec3');
+goog.require('webglmaps.Camera');
+goog.require('webglmaps.Map');
 
 
 /**
@@ -72,12 +74,6 @@ webglmaps.MouseNavigation = function() {
 
   /**
    * @private
-   * @type {number}
-   */
-  this.zoomPeriod_ = 250;
-
-  /**
-   * @private
    * @type {webglmaps.MouseNavigationState}
    */
   this.state_ = webglmaps.MouseNavigationState.NONE;
@@ -98,7 +94,7 @@ webglmaps.MouseNavigation.prototype.handleMouseDown = function(event) {
     var angle = Math.atan2(
         this.element_.height / 2 - event.clientY,
         event.clientX - this.element_.width / 2);
-    this.initialRotation_ = this.map_.getRotation() - angle;
+    this.initialRotation_ = this.map_.getCamera().getRotation() - angle;
   } else {
     this.state_ = webglmaps.MouseNavigationState.PANNING;
   }
@@ -122,17 +118,23 @@ webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
       event.clientX, event.clientY, 0);
   var position = goog.vec.Vec3.create();
   this.map_.fromElementPixelToPosition(pixel, position);
+  var camera = this.map_.getCamera();
   if (this.state_ == webglmaps.MouseNavigationState.PANNING) {
-    var center = this.map_.getCenter();
+    var center = camera.getCenter();
     goog.vec.Vec3.subtract(center, position, center);
     goog.vec.Vec3.add(center, this.previousPosition_, center);
-    this.map_.setCenter(center);
+    camera.setCenter(center);
   } else if (this.state_ == webglmaps.MouseNavigationState.ROTATING) {
     var angle = Math.atan2(
         this.element_.height / 2 - event.clientY,
         event.clientX - this.element_.width / 2);
-    this.map_.setRotation(this.initialRotation_ + angle);
+    camera.setRotation(this.initialRotation_ + angle);
   }
+  if (camera.isDirty()) {
+    this.map_.requestRedraw_();
+  }
+  // FIXME subtle bug here: if the map is animating then matrices won't be
+  //       updated immediately
   goog.vec.Vec3.setFromArray(this.previousPixel_, pixel);
   this.map_.fromElementPixelToPosition(pixel, this.previousPosition_);
 };
@@ -166,9 +168,13 @@ webglmaps.MouseNavigation.prototype.handleMouseUp = function(event) {
 webglmaps.MouseNavigation.prototype.handleMouseWheel = function(event) {
   event.preventDefault();
   if (event.deltaY !== 0) {
-    var zoom = this.map_.getTargetZoom();
+    var camera = this.map_.getCamera();
+    var zoom = camera.getZoom();
     zoom -= goog.math.sign(event.deltaY) * this.zoomStep_;
-    this.map_.setZoom(zoom, this.zoomPeriod_);
+    camera.setZoom(zoom);
+    if (camera.isDirty()) {
+      this.map_.requestRedraw_();
+    }
   }
 };
 

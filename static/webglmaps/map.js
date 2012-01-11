@@ -13,6 +13,7 @@ goog.require('goog.math');
 goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
+goog.require('webglmaps.Camera');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileLayer');
@@ -37,13 +38,6 @@ webglmaps.TILE_FADE_IN_PERIOD = 100;
 webglmaps.TILE_FADE_IN_TRANSITION = webglmaps.transitions.splat;
 
 
-/**
- * @const
- * @type {webglmaps.transitions.TransitionFn}
- */
-webglmaps.ZOOM_TRANSITION = webglmaps.transitions.superPop;
-
-
 
 /**
  * @constructor
@@ -53,6 +47,12 @@ webglmaps.ZOOM_TRANSITION = webglmaps.transitions.superPop;
  * @param {Array.<number>=} opt_bgColor Background color.
  */
 webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
+
+  /**
+   * @private
+   * @type {webglmaps.Camera}
+   */
+  this.camera_ = new webglmaps.Camera();
 
   /**
    * @private
@@ -74,45 +74,9 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
-   * @type {goog.vec.Vec3.Type}
-   */
-  this.center_ = goog.vec.Vec3.createFromValues(0.5, 0.5, 0);
-
-  /**
-   * @private
-   * @type {number}
-   */
-  this.zoom_ = 0;
-
-  /**
-   * @private
-   * @type {number}
-   */
-  this.targetZoom_ = 0;
-
-  /**
-   * @private
-   * @type {number}
-   */
-  this.zoomStartTime_ = 0;
-
-  /**
-   * @private
-   * @type {number}
-   */
-  this.zoomPeriod_ = 0;
-
-  /**
-   * @private
-   * @type {number}
-   */
-  this.rotation_ = 0;
-
-  /**
-   * @private
    * @type {webglmaps.TileQueue}
    */
-  this.tileQueue_ = new webglmaps.tilequeue.Priority(this);
+  this.tileQueue_ = new webglmaps.tilequeue.Priority(this.camera_);
 
   /**
    * @private
@@ -250,16 +214,10 @@ webglmaps.Map.prototype.freeze = function() {
 
 
 /**
- * @param {goog.vec.Vec3.Type=} opt_result Result.
- * @return {!goog.vec.Vec3.Type} Center.
+ * @return {webglmaps.Camera} camera Camera.
  */
-webglmaps.Map.prototype.getCenter = function(opt_result) {
-  if (goog.isDefAndNotNull(opt_result)) {
-    goog.vec.Vec3.setFromArray(opt_result, this.center_);
-    return opt_result;
-  } else {
-    return goog.vec.Vec3.clone(this.center_);
-  }
+webglmaps.Map.prototype.getCamera = function() {
+  return this.camera_;
 };
 
 
@@ -268,22 +226,6 @@ webglmaps.Map.prototype.getCenter = function(opt_result) {
  */
 webglmaps.Map.prototype.getElement = function() {
   return this.gl_.canvas;
-};
-
-
-/**
- * @return {number} Rotation.
- */
-webglmaps.Map.prototype.getRotation = function() {
-  return this.rotation_;
-};
-
-
-/**
- * @return {number} Target zoom.
- */
-webglmaps.Map.prototype.getTargetZoom = function() {
-  return this.targetZoom_;
 };
 
 
@@ -297,22 +239,6 @@ webglmaps.Map.prototype.bindTileVertices = function(tileCoord) {
     this.tileVertices_[tileCoord] =
         new webglmaps.TileVertices(this.gl_, tileCoord);
   }
-};
-
-
-/**
- * @return {number} Tile zoom.
- */
-webglmaps.Map.prototype.getTileZoom = function() {
-  return Math.ceil(this.zoom_ - 0.5);
-};
-
-
-/**
- * @return {number} Rotation.
- */
-webglmaps.Map.prototype.getZoom = function() {
-  return this.zoom_;
 };
 
 
@@ -349,18 +275,10 @@ webglmaps.Map.prototype.render_ = function() {
 
   var gl = this.gl_;
 
-  if (this.zoom_ != this.targetZoom_) {
-    var delta = this.time_ - this.zoomStartTime_;
-    if (delta < this.zoomPeriod_) {
-      this.zoom_ = webglmaps.ZOOM_TRANSITION(
-          this.startZoom_, this.targetZoom_ - this.startZoom_,
-          delta / this.zoomPeriod_);
-      animate = true;
-    } else {
-      this.zoom_ = this.targetZoom_;
-    }
+  if (this.camera_.isDirty()) {
     this.updateMatrices_();
     this.tileQueue_.reprioritize();
+    this.camera_.setDirty(false);
   }
 
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -368,7 +286,7 @@ webglmaps.Map.prototype.render_ = function() {
   this.program_.mvpMatrixUniform.setMatrix4fv(
       false, this.positionToViewportMatrix_);
 
-  var z = this.getTileZoom(), n = 1 << z;
+  var z = this.camera_.getTileZoom(), n = 1 << z;
   var xs = new Array(4), ys = new Array(4);
   var i, position = goog.vec.Vec3.create();
   for (i = 0; i < 4; ++i) {
@@ -548,37 +466,22 @@ webglmaps.Map.prototype.renderTileLayerWithoutInterimTiles_ =
  * @private
  */
 webglmaps.Map.prototype.requestRedraw_ = function() {
-  if (this.frozen_ <= 0) {
-    this.render_();
-  } else if (!this.animating_) {
-    this.dirty_ = true;
+  if (!this.animating_) {
+    if (this.frozen_ <= 0) {
+      this.render_();
+    } else {
+      this.dirty_ = true;
+    }
   }
 };
 
 
 /**
- * @param {goog.vec.Vec3.Vec3Like} center Center.
+ * @param {webglmaps.Camera} camera Camera.
  */
-webglmaps.Map.prototype.setCenter = function(center) {
-  if (!goog.vec.Vec3.equals(this.center_, center)) {
-    goog.vec.Vec3.setFromArray(this.center_, center);
-    this.tileQueue_.reprioritize();
-    this.updateMatrices_();
-    this.requestRedraw_();
-  }
-};
-
-
-/**
- * @param {number} rotation Rotation.
- */
-webglmaps.Map.prototype.setRotation = function(rotation) {
-  if (this.rotation_ != rotation) {
-    this.rotation_ = rotation;
-    this.tileQueue_.reprioritize();
-    this.updateMatrices_();
-    this.requestRedraw_();
-  }
+webglmaps.Map.prototype.setCamera = function(camera) {
+  this.camera_ = camera;
+  this.requestRedraw_();
 };
 
 
@@ -594,22 +497,6 @@ webglmaps.Map.prototype.setSize_ = function(size) {
     this.updateMatrices_();
     this.requestRedraw_();
   }
-};
-
-
-/**
- * @param {number} zoom Zoom.
- * @param {number=} opt_period Period.
- */
-webglmaps.Map.prototype.setZoom = function(zoom, opt_period) {
-  zoom = Math.max(zoom, 0);
-  var period = opt_period || 0;
-  this.startZoom_ = this.zoom_;
-  this.targetZoom_ = zoom;
-  this.zoomSign_ = goog.math.sign(this.zoom_ - this.targetZoom_);
-  this.zoomStartTime_ = period === 0 ? 0 : Date.now();
-  this.zoomPeriod_ = period;
-  this.requestRedraw_();
 };
 
 
@@ -635,10 +522,9 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
   var m = this.positionToViewportMatrix_;
   goog.vec.Mat4.makeIdentity(m);
   goog.vec.Mat4.scale(m,
-      this.tileSize_ * Math.pow(2, this.zoom_ + 1) / gl.drawingBufferWidth,
-      this.tileSize_ * Math.pow(2, this.zoom_ + 1) / gl.drawingBufferHeight, 1);
-  goog.vec.Mat4.rotate(m, this.rotation_, 0, 0, 1);
-  goog.vec.Mat4.translate(m, -this.center_[0], -this.center_[1], 0);
+      2 * this.tileSize_ / gl.drawingBufferWidth,
+      2 * this.tileSize_ / gl.drawingBufferHeight, 1);
+  goog.vec.Mat4.multMat(m, this.camera_.getMatrix(), m);
 
   var inverted = goog.vec.Mat4.invert(m, this.viewportToPositionMatrix_);
   goog.asserts.assert(inverted);

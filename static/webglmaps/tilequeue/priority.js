@@ -4,6 +4,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('goog.structs.PriorityQueue');
 goog.require('goog.vec.Vec3');
+goog.require('webglmaps.Camera');
 goog.require('webglmaps.TileQueue');
 
 
@@ -11,16 +12,16 @@ goog.require('webglmaps.TileQueue');
 /**
  * @constructor
  * @extends {webglmaps.TileQueue}
- * @param {webglmaps.Map} map Map.
+ * @param {webglmaps.Camera} camera Camera.
  * @param {number=} opt_n N.
  */
-webglmaps.tilequeue.Priority = function(map, opt_n) {
+webglmaps.tilequeue.Priority = function(camera, opt_n) {
 
   /**
    * @private
-   * @type {webglmaps.Map}
+   * @type {webglmaps.Camera}
    */
-  this.map_ = map;
+  this.camera_ = camera;
 
   /**
    * @private
@@ -63,14 +64,13 @@ webglmaps.tilequeue.Priority.prototype.enqueue = function(tile) {
  * @return {?number} Priority.
  */
 webglmaps.tilequeue.Priority.prototype.getPriority = function(tile) {
-  if (goog.isNull(this.map_)) {
+  if (goog.isNull(this.camera_)) {
     return 0;
   }
   var delta = goog.vec.Vec3.clone(tile.tileCoord.getCenter());
-  goog.vec.Vec3.subtract(delta, this.map_.getCenter(), delta);
+  goog.vec.Vec3.subtract(delta, this.camera_.getCenter(), delta);
   var magnitudeSquared = goog.vec.Vec3.magnitudeSquared(delta);
-  var mapZoom = Math.ceil(this.map_.getZoom() - 0.5);
-  if (tile.tileCoord.z == mapZoom) {
+  if (tile.tileCoord.z == this.camera_.getTileZoom()) {
     return magnitudeSquared;
   } else {
     return null;
