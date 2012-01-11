@@ -28,6 +28,8 @@ Portability
 Quality
 -------
 
+* Add interim tiles
+
 * Fix tile seams (requires careful design of blending between image tiles and clear color)
 
 * Fix precision problems at high zoom levels (might require different projections at different zoom levels)

@@ -1,7 +1,7 @@
 goog.provide('webglmaps.Texture');
 
-goog.require('goog.asserts');
 goog.require('goog.Disposable');
+goog.require('goog.asserts');
 
 
 
@@ -37,26 +37,21 @@ goog.inherits(webglmaps.Texture, goog.Disposable);
 
 
 /**
- * @return {WebGLTexture} Texture.
  */
-webglmaps.Texture.prototype.bindAndGet = function() {
+webglmaps.Texture.prototype.bind = function() {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
   if (goog.isNull(this.texture_)) {
-    var image = this.image_;
-    if (!image.complete) {
-      return null;
-    }
     var texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image_);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     this.texture_ = texture;
   } else {
     gl.bindTexture(gl.TEXTURE_2D, this.texture_);
   }
-  return this.texture_;
 };
 
 
@@ -66,14 +61,6 @@ webglmaps.Texture.prototype.bindAndGet = function() {
 webglmaps.Texture.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
   this.setGL(null);
-};
-
-
-/**
- * @return {Image} Image.
- */
-webglmaps.Texture.prototype.getImage = function() {
-  return this.image_;
 };
 
 

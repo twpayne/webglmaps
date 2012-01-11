@@ -14,11 +14,34 @@ goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
 goog.require('webglmaps.Program');
-goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileCoord');
-goog.require('webglmaps.TileQueue');
+goog.require('webglmaps.TileLayer');
 goog.require('webglmaps.TileUrl');
+goog.require('webglmaps.TileVertices');
+goog.require('webglmaps.tilequeue.Priority');
+goog.require('webglmaps.transitions');
 goog.require('webglmaps.utils');
+
+
+/**
+ * @const
+ * @type {number}
+ */
+webglmaps.TILE_FADE_IN_PERIOD = 100;
+
+
+/**
+ * @const
+ * @type {webglmaps.transitions.TransitionFn}
+ */
+webglmaps.TILE_FADE_IN_TRANSITION = webglmaps.transitions.splat;
+
+
+/**
+ * @const
+ * @type {webglmaps.transitions.TransitionFn}
+ */
+webglmaps.ZOOM_TRANSITION = webglmaps.transitions.superPop;
 
 
 
@@ -89,7 +112,7 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @private
    * @type {webglmaps.TileQueue}
    */
-  this.tileQueue_ = new webglmaps.TileQueue(this);
+  this.tileQueue_ = new webglmaps.tilequeue.Priority(this);
 
   /**
    * @private
@@ -102,6 +125,12 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @type {number}
    */
   this.frameIndex_ = 0;
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.time_ = 0;
 
   /**
    * @private
@@ -123,9 +152,9 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
-   * @type {Array.<webglmaps.Layer>}
+   * @type {Array.<webglmaps.TileLayer>}
    */
-  this.layers_ = [];
+  this.tileLayers_ = [];
 
   /**
    * @private
@@ -163,6 +192,12 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
   this.program_.setGL(gl);
   this.program_.use();
 
+  /**
+   * @private
+   * @type {Object.<string, webglmaps.TileVertices>}
+   */
+  this.tileVertices_ = {};
+
   var vsm = new goog.dom.ViewportSizeMonitor();
   goog.events.listen(
       vsm, goog.events.EventType.RESIZE, this.handleResize, false, this);
@@ -173,14 +208,14 @@ goog.inherits(webglmaps.Map, goog.events.EventTarget);
 
 
 /**
- * @param {webglmaps.Layer} layer Layer.
+ * @param {webglmaps.TileLayer} tileLayer Tile layer.
  */
-webglmaps.Map.prototype.addLayer = function(layer) {
-  layer.setGL(this.gl_);
-  layer.setTileQueue(this.tileQueue_);
-  this.layers_.push(layer);
-  this.layerChangeListeners_[goog.getUid(layer)] = goog.events.listen(layer,
-      goog.events.EventType.CHANGE, this.handleLayerChange, false, this);
+webglmaps.Map.prototype.addTileLayer = function(tileLayer) {
+  tileLayer.setGL(this.gl_);
+  this.tileLayers_.push(tileLayer);
+  this.layerChangeListeners_[goog.getUid(tileLayer)] = goog.events.listen(
+      tileLayer, goog.events.EventType.CHANGE, this.handleTileLayerChange,
+      false, this);
   this.requestRedraw_();
 };
 
@@ -193,8 +228,8 @@ webglmaps.Map.prototype.disposeInternal = function() {
   var gl = this.gl_;
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
   gl.bindTexture(gl.TEXTURE0, null);
-  goog.disposeAll(this.layers_);
-  this.layers_ = null;
+  goog.disposeAll(this.tileLayers_);
+  this.tileLayers_ = [];
   gl.useProgram(null);
   goog.dispose(this.program_);
   this.program_ = null;
@@ -259,6 +294,23 @@ webglmaps.Map.prototype.getTargetZoom = function() {
 
 
 /**
+ * @param {webglmaps.TileCoord} tileCoord Tile coord.
+ */
+webglmaps.Map.prototype.bindTileVertices = function(tileCoord) {
+  var key = tileCoord.toString();
+  var tileVertices;
+  if (goog.object.containsKey(this.tileVertices_, key)) {
+    tileVertices = /** @type {webglmaps.TileVertices} */
+        goog.object.get(this.tileVertices_, key);
+    tileVertices.bind();
+  } else {
+    tileVertices = new webglmaps.TileVertices(this.gl_, tileCoord);
+    goog.object.add(this.tileVertices_, key, tileVertices);
+  }
+};
+
+
+/**
  * @return {number} Tile zoom.
  */
 webglmaps.Map.prototype.getTileZoom = function() {
@@ -284,9 +336,13 @@ webglmaps.Map.prototype.handleResize = function(event) {
 
 
 /**
+ * @param {goog.events.Event} event Event.
  */
-webglmaps.Map.prototype.handleLayerChange = function() {
-  this.requestRedraw_();
+webglmaps.Map.prototype.handleTileLayerChange = function(event) {
+  var tileLayer = /** @type {webglmaps.TileLayer} */ event.target;
+  if (tileLayer.getLastUsedTime() == this.time_) {
+    this.requestRedraw_();
+  }
 };
 
 
@@ -300,14 +356,14 @@ webglmaps.Map.prototype.render_ = function() {
   this.animating_ = false;
   this.dirty_ = false;
   ++this.frameIndex_;
+  this.time_ = Date.now();
 
   var gl = this.gl_;
-  var time = Date.now();
 
   if (this.zoom_ != this.targetZoom_) {
-    var delta = time - this.zoomStartTime_;
+    var delta = this.time_ - this.zoomStartTime_;
     if (delta < this.zoomPeriod_) {
-      this.zoom_ = webglmaps.Map.ZOOM_TRANSITION(
+      this.zoom_ = webglmaps.ZOOM_TRANSITION(
           this.startZoom_, this.targetZoom_ - this.startZoom_,
           delta / this.zoomPeriod_);
       animate = true;
@@ -323,7 +379,7 @@ webglmaps.Map.prototype.render_ = function() {
   this.program_.mvpMatrixUniform.setMatrix4fv(
       false, this.positionToViewportMatrix_);
 
-  var tileZoom = this.getTileZoom(), n = 1 << tileZoom;
+  var z = this.getTileZoom(), n = 1 << z;
   var xs = new Array(4), ys = new Array(4);
   var i, position = goog.vec.Vec3.create();
   for (i = 0; i < 4; ++i) {
@@ -338,9 +394,10 @@ webglmaps.Map.prototype.render_ = function() {
   var x1 = goog.math.clamp(Math.max.apply(null, xs), 0, n - 1);
   var y1 = goog.math.clamp(Math.max.apply(null, ys), 0, n - 1);
 
-  goog.array.forEach(this.layers_, function(layer) {
-    animate = layer.render(this.frameIndex_, time, this.program_, tileZoom,
-        x0, y0, x1, y1) || animate;
+  goog.array.forEach(this.tileLayers_, function(tileLayer) {
+    if (this.renderTileLayer_(tileLayer, z, x0, y0, x1, y1)) {
+      animate = true;
+    }
   }, this);
 
   if (animate) {
@@ -349,6 +406,56 @@ webglmaps.Map.prototype.render_ = function() {
         goog.bind(this.render_, this), this.gl_.canvas);
   }
 
+};
+
+
+/**
+ * @param {webglmaps.TileLayer} tileLayer Tile layer.
+ * @param {number} z Z.
+ * @param {number} x0 X0.
+ * @param {number} y0 Y0.
+ * @param {number} x1 X1.
+ * @param {number} y1 Y1.
+ * @return {boolean} Animate?
+ * @private
+ */
+webglmaps.Map.prototype.renderTileLayer_ =
+    function(tileLayer, z, x0, y0, x1, y1) {
+  var gl = this.gl_;
+  var animate = false;
+  var program = this.program_, tileQueue = this.tileQueue_, time = this.time_;
+  var tileCoord = new webglmaps.TileCoord(z, 0, 0);
+  var alpha, tile, timeSinceFirstUsed, x, y;
+  tileLayer.setUsedTime(time);
+  for (x = x0; x <= x1; ++x) {
+    tileCoord.x = x;
+    for (y = y0; y <= y1; ++y) {
+      tileCoord.y = y;
+      tile = tileLayer.getTile(tileCoord, tileQueue);
+      if (!goog.isNull(tile)) {
+        tile.setUsedTime(time);
+        if (tile.isLoaded()) {
+          timeSinceFirstUsed = time - tile.getFirstUsedTime();
+          if (timeSinceFirstUsed < webglmaps.TILE_FADE_IN_PERIOD) {
+            alpha = webglmaps.TILE_FADE_IN_TRANSITION(
+                0, 1, timeSinceFirstUsed / webglmaps.TILE_FADE_IN_PERIOD);
+            animate = true;
+          } else {
+            alpha = 1;
+          }
+          tile.texture.bind();
+          this.bindTileVertices(tileCoord);
+          program.position.pointer(2, gl.FLOAT, false, 16, 0);
+          program.texCoord.pointer(2, gl.FLOAT, false, 16, 8);
+          gl.activeTexture(gl.TEXTURE0);
+          program.textureUniform.set1i(0);
+          program.alphaUniform.set1f(alpha);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+      }
+    }
+  }
+  return animate;
 };
 
 
@@ -459,10 +566,3 @@ webglmaps.Map.prototype.updateMatrices_ = function() {
   goog.vec.Mat4.multMat(this.viewportToPositionMatrix_, m, m);
 
 };
-
-
-/**
- * @const
- * @type {webglmaps.transitions.TransitionFn}
- */
-webglmaps.Map.ZOOM_TRANSITION = webglmaps.transitions.superPop;

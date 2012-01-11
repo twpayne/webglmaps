@@ -45,6 +45,7 @@ webglmaps.ArrayBuffer.prototype.bind = function() {
 webglmaps.ArrayBuffer.prototype.data = function(data, usage) {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer_);
   gl.bufferData(gl.ARRAY_BUFFER, data, usage);
 };
 

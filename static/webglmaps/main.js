@@ -2,9 +2,9 @@ goog.provide('webglmaps.main');
 
 goog.require('goog.color');
 goog.require('goog.debug.errorHandlerWeakDep');
-goog.require('webglmaps.Layer');
 goog.require('webglmaps.Map');
 goog.require('webglmaps.MouseNavigation');
+goog.require('webglmaps.TileLayer');
 goog.require('webglmaps.TileUrl');
 
 
@@ -31,11 +31,11 @@ webglmaps.main = function(canvas) {
   var bgColor = goog.color.hexToRgb('#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
 
-  var layer, tileUrl;
+  var tileLayer, tileUrl;
   if (webglmaps.USE_LOCAL_TILESERVER) {
     tileUrl = webglmaps.tileurl.fromTemplate(
         'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
-    layer = new webglmaps.Layer(tileUrl);
+    tileLayer = new webglmaps.TileLayer(tileUrl);
   } else {
     tileUrl = webglmaps.tileurl.fromTileUrls([
       webglmaps.tileurl.fromTemplate(
@@ -45,9 +45,9 @@ webglmaps.main = function(canvas) {
       webglmaps.tileurl.fromTemplate(
           'http://c.tile.openstreetmap.org/{z}/{x}/{y}.png')
     ]);
-    layer = new webglmaps.Layer(tileUrl, 0, 18);
+    tileLayer = new webglmaps.TileLayer(tileUrl, 0, 18);
   }
-  map.addLayer(layer);
+  map.addTileLayer(tileLayer);
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);
 

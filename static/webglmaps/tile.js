@@ -4,24 +4,8 @@ goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
-goog.require('webglmaps.ArrayBuffer');
-goog.require('webglmaps.Program');
 goog.require('webglmaps.Texture');
 goog.require('webglmaps.TileCoord');
-goog.require('webglmaps.TileQueue');
-goog.require('webglmaps.TileUrl');
-goog.require('webglmaps.transitions');
-
-
-/**
- * @enum {number}
- */
-webglmaps.TileLoadingState = {
-  WAITING: 0,
-  FADING_IN: 1,
-  COMPLETE: 2,
-  ERROR: 3
-};
 
 
 
@@ -29,10 +13,10 @@ webglmaps.TileLoadingState = {
  * @constructor
  * @param {webglmaps.TileCoord} tileCoord Tile coord.
  * @param {string} src Source.
- * @param {webglmaps.TileQueue=} opt_tileQueue Tile queue.
+ * @param {string=} opt_crossOrigin Cross origin.
  * @extends {goog.events.EventTarget}
  */
-webglmaps.Tile = function(tileCoord, src, opt_tileQueue) {
+webglmaps.Tile = function(tileCoord, src, opt_crossOrigin) {
 
   goog.base(this);
 
@@ -41,12 +25,6 @@ webglmaps.Tile = function(tileCoord, src, opt_tileQueue) {
    * @type {WebGLRenderingContext}
    */
   this.gl_ = null;
-
-  /**
-   * @private
-   * @type {number}
-   */
-  this.lastFrameIndex_ = 0;
 
   /**
    * @type {webglmaps.TileCoord}
@@ -58,53 +36,44 @@ webglmaps.Tile = function(tileCoord, src, opt_tileQueue) {
    */
   this.src = src;
 
-  /**
-   * @private
-   * @type {webglmaps.ArrayBuffer}
-   */
-  this.vertices_ = null;
-
-  /**
-   * @private
-   * @type {webglmaps.TileLoadingState}
-   */
-  this.loadingState_ = webglmaps.TileLoadingState.WAITING;
-
   var image = new Image();
-  image.crossOrigin = '';
+  if (goog.isDef(opt_crossOrigin)) {
+    image.crossOrigin = opt_crossOrigin;
+  }
+
+  /**
+   * @type {Image}
+   */
+  this.image = image;
 
   /**
    * @private
+   * @type {boolean}
+   */
+  this.loaded_ = false;
+
+  goog.events.listenOnce(image, goog.events.EventType.LOAD,
+      this.handleImageLoad, false, this);
+
+  /**
    * @type {webglmaps.Texture}
    */
-  this.texture_ = new webglmaps.Texture(image);
+  this.texture = new webglmaps.Texture(image);
 
   /**
    * @private
-   * @type {?number}
+   * @type {number}
    */
-  this.firstRenderTime_ = null;
+  this.firstUsedTime_ = 0;
 
-  if (goog.isDef(opt_tileQueue)) {
-    opt_tileQueue.enqueue(this);
-  } else {
-    image.src = this.src;
-    goog.events.listenOnce(image, goog.events.EventType.ERROR,
-        this.handleImageError, false, this);
-    goog.events.listenOnce(image, goog.events.EventType.LOAD,
-        this.handleImageLoad, false, this);
-  }
+  /**
+   * @private
+   * @type {number}
+   */
+  this.lastUsedTime_ = 0;
 
 };
 goog.inherits(webglmaps.Tile, goog.events.EventTarget);
-
-
-/**
- * @return {Image} Image.
- */
-webglmaps.Tile.prototype.getImage = function() {
-  return this.texture_.getImage();
-};
 
 
 /**
@@ -112,31 +81,23 @@ webglmaps.Tile.prototype.getImage = function() {
  */
 webglmaps.Tile.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
-  this.setGL(null);
+  goog.dispose(this.texture);
 };
 
 
 /**
- * @return {number} Last frame index.
+ * @return {number} First used time.
  */
-webglmaps.Tile.prototype.getLastFrameIndex = function() {
-  return this.lastFrameIndex_;
+webglmaps.Tile.prototype.getFirstUsedTime = function() {
+  return this.firstUsedTime_;
 };
 
 
 /**
- * @return {webglmaps.TileLoadingState} Loading state.
+ * @return {number} Last used time.
  */
-webglmaps.Tile.prototype.getLoadingState = function() {
-  return this.loadingState_;
-};
-
-
-/**
- * @param {Image} image Image.
- */
-webglmaps.Tile.prototype.handleImageError = function(image) {
-  this.loadingState_ = webglmaps.TileLoadingState.ERROR;
+webglmaps.Tile.prototype.getLastUsedTime = function() {
+  return this.lastUsedTime_;
 };
 
 
@@ -144,105 +105,33 @@ webglmaps.Tile.prototype.handleImageError = function(image) {
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.Tile.prototype.handleImageLoad = function(event) {
-  this.loadingState_ = webglmaps.TileLoadingState.FADING_IN;
+  this.loaded_ = true;
   this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE));
 };
 
 
 /**
- * @param {number} frameIndex Frame index.
- * @param {number} time Time.
- * @param {webglmaps.Program} program Program.
- * @param {number} tileZoom Tile zoom.
- * @return {boolean} Animate?
+ * @return {boolean} Is loaded?
  */
-webglmaps.Tile.prototype.render =
-    function(frameIndex, time, program, tileZoom) {
-  this.lastFrameIndex_ = frameIndex;
-  var gl = this.gl_;
-  if (goog.isNull(gl) ||
-      this.loadingState_ == webglmaps.TileLoadingState.ERROR ||
-      this.loadingState_ == webglmaps.TileLoadingState.WAITING) {
-    return false;
-  }
-  if (goog.isNull(this.texture_.bindAndGet())) {
-    return false;
-  }
-  if (goog.isNull(this.vertices_)) {
-    this.vertices_ = new webglmaps.ArrayBuffer(gl);
-    this.vertices_.bind();
-    var n = 1 << this.tileCoord.z;
-    var x = this.tileCoord.x, y = n - this.tileCoord.y - 1;
-    var vertices = [
-      x / n, y / n, 0, 1,
-      (x + 1) / n, y / n, 1, 1,
-      x / n, (y + 1) / n, 0, 0,
-      (x + 1) / n, (y + 1) / n, 1, 0
-    ];
-    this.vertices_.data(new Float32Array(vertices), gl.STATIC_DRAW);
-  } else {
-    this.vertices_.bind();
-  }
-  var alpha, animate;
-  if (this.tileCoord.z != tileZoom) {
-    this.loadingState_ = webglmaps.TileLoadingState.COMPLETE;
-    alpha = 1;
-    animate = false;
-  } else if (goog.isNull(this.firstRenderTime_)) {
-    this.loadingState_ = webglmaps.TileLoadingState.FADING_IN;
-    this.firstRenderTime_ = time;
-    alpha = 0;
-    animate = true;
-  } else if (time - this.firstRenderTime_ < webglmaps.Tile.FADE_IN_PERIOD) {
-    alpha = webglmaps.Tile.FADE_IN_TRANSITION(
-        0, 1, (time - this.firstRenderTime_) / webglmaps.Tile.FADE_IN_PERIOD);
-    animate = true;
-  } else {
-    this.loadingState_ = webglmaps.TileLoadingState.COMPLETE;
-    alpha = 1;
-    animate = false;
-  }
-  program.position.pointer(2, gl.FLOAT, false, 16, 0);
-  program.texCoord.pointer(2, gl.FLOAT, false, 16, 8);
-  gl.activeTexture(gl.TEXTURE0);
-  program.textureUniform.set1i(0);
-  program.alphaUniform.set1f(alpha);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  return animate;
+webglmaps.Tile.prototype.isLoaded = function() {
+  return this.loaded_;
 };
 
 
 /**
- * @param {WebGLRenderingContext} gl WebGL rendering context.
+ * @param {WebGLRenderingContext} gl GL.
  */
 webglmaps.Tile.prototype.setGL = function(gl) {
-  if (!goog.isNull(this.gl_)) {
-    if (!goog.isNull(this.vertices_)) {
-      goog.dispose(this.vertices_);
-      this.vertices_ = null;
-    }
-    if (!goog.isNull(this.vertexAttribBuffer_)) {
-      gl.deleteBuffer(this.vertexAttribBuffer_);
-      this.vertexAttribBuffer_ = null;
-    }
-    this.texture_.setGL(null);
-  }
-  this.gl_ = gl;
-  if (!goog.isNull(gl)) {
-    this.texture_.setGL(gl);
-  }
+  this.texture.setGL(gl);
 };
 
 
 /**
- * @const
- * @type {number}
+ * @param {number} usedTime Used time.
  */
-webglmaps.Tile.FADE_IN_PERIOD = 100;
-
-
-/**
- * @const
- * @type {webglmaps.transitions.TransitionFn}
- */
-webglmaps.Tile.FADE_IN_TRANSITION = webglmaps.transitions.splat;
+webglmaps.Tile.prototype.setUsedTime = function(usedTime) {
+  if (this.firstUsedTime_ === 0) {
+    this.firstUsedTime_ = usedTime;
+  }
+  this.lastUsedTime_ = usedTime;
+};
