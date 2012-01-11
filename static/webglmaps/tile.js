@@ -6,6 +6,7 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('webglmaps.ArrayBuffer');
 goog.require('webglmaps.Program');
+goog.require('webglmaps.Texture');
 goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileQueue');
 goog.require('webglmaps.TileUrl');
@@ -64,22 +65,19 @@ webglmaps.Tile = function(tileCoord, src, opt_tileQueue) {
   this.vertices_ = null;
 
   /**
-   * @type {Image}
-   */
-  this.image = new Image();
-  this.image.crossOrigin = '';
-
-  /**
    * @private
    * @type {webglmaps.TileLoadingState}
    */
   this.loadingState_ = webglmaps.TileLoadingState.WAITING;
 
+  var image = new Image();
+  image.crossOrigin = '';
+
   /**
    * @private
-   * @type {WebGLTexture}
+   * @type {webglmaps.Texture}
    */
-  this.texture_ = null;
+  this.texture_ = new webglmaps.Texture(image);
 
   /**
    * @private
@@ -90,15 +88,23 @@ webglmaps.Tile = function(tileCoord, src, opt_tileQueue) {
   if (goog.isDef(opt_tileQueue)) {
     opt_tileQueue.enqueue(this);
   } else {
-    this.image.src = this.src;
-    goog.events.listenOnce(this.image, goog.events.EventType.ERROR,
+    image.src = this.src;
+    goog.events.listenOnce(image, goog.events.EventType.ERROR,
         this.handleImageError, false, this);
-    goog.events.listenOnce(this.image, goog.events.EventType.LOAD,
+    goog.events.listenOnce(image, goog.events.EventType.LOAD,
         this.handleImageLoad, false, this);
   }
 
 };
 goog.inherits(webglmaps.Tile, goog.events.EventTarget);
+
+
+/**
+ * @return {Image} Image.
+ */
+webglmaps.Tile.prototype.getImage = function() {
+  return this.texture_.getImage();
+};
 
 
 /**
@@ -138,7 +144,6 @@ webglmaps.Tile.prototype.handleImageError = function(image) {
  * @param {goog.events.BrowserEvent} event Event.
  */
 webglmaps.Tile.prototype.handleImageLoad = function(event) {
-  this.image = /** @type {Image} */ event.target;
   this.loadingState_ = webglmaps.TileLoadingState.FADING_IN;
   this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE));
 };
@@ -160,18 +165,8 @@ webglmaps.Tile.prototype.render =
       this.loadingState_ == webglmaps.TileLoadingState.WAITING) {
     return false;
   }
-  if (goog.isNull(this.texture_)) {
-    if (goog.isNull(this.image)) {
-      return false;
-    }
-    this.texture_ = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.texture_);
-    gl.texImage2D(
-        gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  } else {
-    gl.bindTexture(gl.TEXTURE_2D, this.texture_);
+  if (goog.isNull(this.texture_.bindAndGet())) {
+    return false;
   }
   if (goog.isNull(this.vertices_)) {
     this.vertices_ = new webglmaps.ArrayBuffer(gl);
@@ -230,12 +225,12 @@ webglmaps.Tile.prototype.setGL = function(gl) {
       gl.deleteBuffer(this.vertexAttribBuffer_);
       this.vertexAttribBuffer_ = null;
     }
-    if (!goog.isNull(this.texture_)) {
-      gl.deleteTexture(this.texture_);
-      this.texture_ = null;
-    }
+    this.texture_.setGL(null);
   }
   this.gl_ = gl;
+  if (!goog.isNull(gl)) {
+    this.texture_.setGL(gl);
+  }
 };
 
 

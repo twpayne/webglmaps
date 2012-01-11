@@ -119,14 +119,15 @@ webglmaps.TileQueue.prototype.update = function() {
     if (!goog.isDef(tile)) {
       break;
     }
-    tile.image.src = tile.src;
-    goog.events.listen(tile.image, goog.events.EventType.ERROR,
+    image = tile.getImage();
+    image.src = tile.src;
+    goog.events.listen(image, goog.events.EventType.ERROR,
         goog.partial(this.handleTileImageError, tile), false, this);
-    goog.events.listen(tile.image, goog.events.EventType.ERROR,
+    goog.events.listen(image, goog.events.EventType.ERROR,
         tile.handleImageError, false, tile);
-    goog.events.listen(tile.image, goog.events.EventType.LOAD,
+    goog.events.listen(image, goog.events.EventType.LOAD,
         goog.partial(this.handleTileImageLoad, tile), false, this);
-    goog.events.listen(tile.image, goog.events.EventType.LOAD,
+    goog.events.listen(image, goog.events.EventType.LOAD,
         tile.handleImageLoad, false, tile);
     ++this.i_;
   }
