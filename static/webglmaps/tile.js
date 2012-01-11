@@ -207,8 +207,8 @@ webglmaps.Tile.prototype.render =
     alpha = 1;
     animate = false;
   }
-  gl.vertexAttribPointer(program.aPositionLocation, 2, gl.FLOAT, false, 16, 0);
-  gl.vertexAttribPointer(program.aTexCoordLocation, 2, gl.FLOAT, false, 16, 8);
+  program.position.pointer(2, gl.FLOAT, false, 16, 0);
+  program.texCoord.pointer(2, gl.FLOAT, false, 16, 8);
   gl.activeTexture(gl.TEXTURE0);
   program.textureUniform.set1i(0);
   program.alphaUniform.set1f(alpha);

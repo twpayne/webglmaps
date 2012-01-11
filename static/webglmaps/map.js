@@ -159,7 +159,8 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @private
    * @type {webglmaps.Program}
    */
-  this.program_ = new webglmaps.Program(gl);
+  this.program_ = new webglmaps.Program();
+  this.program_.setGL(gl);
   this.program_.use();
 
   var vsm = new goog.dom.ViewportSizeMonitor();
