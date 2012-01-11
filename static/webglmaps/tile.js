@@ -4,6 +4,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
+goog.require('webglmaps.ArrayBuffer');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileQueue');
@@ -58,9 +59,9 @@ webglmaps.Tile = function(tileCoord, src, opt_tileQueue) {
 
   /**
    * @private
-   * @type {WebGLBuffer}
+   * @type {webglmaps.ArrayBuffer}
    */
-  this.vertexAttribBuffer_ = null;
+  this.vertices_ = null;
 
   /**
    * @type {Image}
@@ -172,21 +173,20 @@ webglmaps.Tile.prototype.render =
   } else {
     gl.bindTexture(gl.TEXTURE_2D, this.texture_);
   }
-  if (goog.isNull(this.vertexAttribBuffer_)) {
-    this.vertexAttribBuffer_ = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
+  if (goog.isNull(this.vertices_)) {
+    this.vertices_ = new webglmaps.ArrayBuffer(gl);
+    this.vertices_.bind();
     var n = 1 << this.tileCoord.z;
     var x = this.tileCoord.x, y = n - this.tileCoord.y - 1;
-    var positions = [
+    var vertices = [
       x / n, y / n, 0, 1,
       (x + 1) / n, y / n, 1, 1,
       x / n, (y + 1) / n, 0, 0,
       (x + 1) / n, (y + 1) / n, 1, 0
     ];
-    gl.bufferData(
-        gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    this.vertices_.data(new Float32Array(vertices), gl.STATIC_DRAW);
   } else {
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttribBuffer_);
+    this.vertices_.bind();
   }
   var alpha, animate;
   if (this.tileCoord.z != tileZoom) {
@@ -222,6 +222,10 @@ webglmaps.Tile.prototype.render =
  */
 webglmaps.Tile.prototype.setGL = function(gl) {
   if (!goog.isNull(this.gl_)) {
+    if (!goog.isNull(this.vertices_)) {
+      goog.dispose(this.vertices_);
+      this.vertices_ = null;
+    }
     if (!goog.isNull(this.vertexAttribBuffer_)) {
       gl.deleteBuffer(this.vertexAttribBuffer_);
       this.vertexAttribBuffer_ = null;
