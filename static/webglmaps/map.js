@@ -319,8 +319,8 @@ webglmaps.Map.prototype.render_ = function() {
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  gl.uniformMatrix4fv(
-      this.program_.uMVPMatrixLocation, false, this.positionToViewportMatrix_);
+  this.program_.mvpMatrixUniform.setMatrix4fv(
+      false, this.positionToViewportMatrix_);
 
   var tileZoom = this.getTileZoom(), n = 1 << tileZoom;
   var xs = new Array(4), ys = new Array(4);

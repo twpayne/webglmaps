@@ -210,8 +210,8 @@ webglmaps.Tile.prototype.render =
   gl.vertexAttribPointer(program.aPositionLocation, 2, gl.FLOAT, false, 16, 0);
   gl.vertexAttribPointer(program.aTexCoordLocation, 2, gl.FLOAT, false, 16, 8);
   gl.activeTexture(gl.TEXTURE0);
-  gl.uniform1i(program.uTextureLocation, 0);
-  gl.uniform1f(program.uAlphaLocation, alpha);
+  program.textureUniform.set1i(0);
+  program.alphaUniform.set1f(alpha);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   return animate;
 };
