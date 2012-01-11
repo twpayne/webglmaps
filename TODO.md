@@ -54,11 +54,9 @@ Performance
 Back end
 --------
 
-* Expire LRU tiles
-
 * Multi-level tile cache (Image and WebGLTexture)
 
-* `TileQueue.reprioritize` should be identify 
+* `TileQueue.reprioritize` should be identify when no prioritization is needed
 
 * Use WebWorkers to manage tile cache
 
@@ -68,11 +66,17 @@ Architecture
 
 * Refactor :-)
 
+* Add ICacheable interface and generic LRU cache
 
-Open questions
---------------
+* Map should manage vertex buffers
 
-* Should vertex buffers be managed by the map?
+* Abstract out Camera
+
+
+Miscellaneous
+-------------
+
+* Order `goog.provide` before `goog.require`
 
 
 vim: set filetype=markdown spell spelllang=en textwidth=0:
