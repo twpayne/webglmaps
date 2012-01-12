@@ -15,6 +15,7 @@ goog.require('webglmaps.shader.fragment.ColorHalftone');
 goog.require('webglmaps.shader.fragment.Grayscale');
 goog.require('webglmaps.shader.fragment.HexagonalPixelate');
 goog.require('webglmaps.shader.fragment.Invert');
+goog.require('webglmaps.shader.vertex.Wobble');
 
 
 /**
@@ -69,6 +70,10 @@ webglmaps.main = function(canvas) {
     new webglmaps.shader.fragment.HexagonalPixelate(),
     new webglmaps.shader.fragment.ColorHalftone()
   ];
+  var vertexShaders = [
+    null,
+    new webglmaps.shader.vertex.Wobble()
+  ];
   goog.events.listen(
       new goog.events.KeyHandler(document),
       goog.events.KeyHandler.EventType.KEY,
@@ -76,13 +81,19 @@ webglmaps.main = function(canvas) {
        * @param {goog.events.KeyEvent} event Event.
        */
       function(event) {
-        window.console.log(event.charCode);
-        if (event.charCode == 102) {
+        var index;
+        if (event.charCode == 'f'.charCodeAt(0)) {
           var fragmentShader = tileLayer.getFragmentShader();
-          var index = goog.array.indexOf(fragmentShaders, fragmentShader);
+          index = goog.array.indexOf(fragmentShaders, fragmentShader);
           index = goog.math.modulo(index + 1, fragmentShaders.length);
           fragmentShader = fragmentShaders[index];
           tileLayer.setFragmentShader(fragmentShader);
+        } else if (event.charCode == 'v'.charCodeAt(0)) {
+          var vertexShader = tileLayer.getVertexShader();
+          index = goog.array.indexOf(vertexShaders, vertexShader);
+          index = goog.math.modulo(index + 1, vertexShaders.length);
+          vertexShader = vertexShaders[index];
+          tileLayer.setVertexShader(vertexShader);
         }
       });
 
