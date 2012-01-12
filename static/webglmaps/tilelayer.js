@@ -32,6 +32,12 @@ webglmaps.TileLayerOptions.prototype.fragmentShader;
 
 
 /**
+ * @type {boolean|undefined}
+ */
+webglmaps.TileLayerOptions.prototype.interimTiles;
+
+
+/**
  * @type {?number}
  */
 webglmaps.TileLayerOptions.prototype.maxZ;
@@ -94,6 +100,12 @@ webglmaps.TileLayer = function(tileUrl, opt_options) {
 
   /**
    * @private
+   * @type {boolean}
+   */
+  this.interimTiles_ = options.interimTiles || true;
+
+  /**
+   * @private
    * @type {?number}
    */
   this.maxZ_ = options.maxZ || null;
@@ -115,12 +127,6 @@ webglmaps.TileLayer = function(tileUrl, opt_options) {
    * @type {Object.<webglmaps.TileCoord, webglmaps.Tile>}
    */
   this.tiles_ = {};
-
-  /**
-   * @private
-   * @type {boolean}
-   */
-  this.renderWithInterimTiles_ = true;
 
 };
 goog.inherits(webglmaps.TileLayer, goog.events.EventTarget);
@@ -183,10 +189,10 @@ webglmaps.TileLayer.prototype.getLastUsedTime = function() {
 
 
 /**
- * @return {boolean} Render with interim tiles.
+ * @return {boolean} Interim tiles.
  */
-webglmaps.TileLayer.prototype.getRenderInterimTiles = function() {
-  return this.renderWithInterimTiles_;
+webglmaps.TileLayer.prototype.getInterimTiles = function() {
+  return this.interimTiles_;
 };
 
 
@@ -268,6 +274,17 @@ webglmaps.TileLayer.prototype.setGL = function(gl) {
   goog.object.forEach(this.tiles_, function(tile) {
     tile.setGL(gl);
   });
+};
+
+
+/**
+ * @param {boolean} interimTiles Interim tiles.
+ */
+webglmaps.TileLayer.prototype.setInterimTiles = function(interimTiles) {
+  if (this.interimTiles_ != interimTiles) {
+    this.interimTiles_ = interimTiles;
+    this.dispatchChangeEvent();
+  }
 };
 
 
