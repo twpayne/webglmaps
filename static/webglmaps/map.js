@@ -354,6 +354,8 @@ webglmaps.Map.prototype.render_ = function() {
         goog.bind(this.render_, this), this.gl_.canvas);
   }
 
+  this.tileQueue_.update();
+
 };
 
 
