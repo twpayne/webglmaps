@@ -9,14 +9,6 @@ User interface
 * Fix shaky pan when animating
 
 
-Functionality
--------------
-
-* Add parameterizable fragment shaders
-
-* Add tile decimation
-
-
 Portability
 -----------
 
@@ -46,9 +38,9 @@ Performance
 Back end
 --------
 
-* Multi-level tile cache (Image and WebGLTexture)
+* Add ICacheable interface and generic LRU cache
 
-* `TileQueue.reprioritize` should be identify when no prioritization is needed
+* Multi-level tile cache (Image and WebGLTexture)
 
 * Use WebWorkers to manage tile cache
 
@@ -56,15 +48,9 @@ Back end
 Architecture
 ------------
 
-* Refactor :-)
+* Render tiles to intermediate texture (render buffer) with wrapping and then draw with single call
 
-* Add ICacheable interface and generic LRU cache
-
-
-Open questions
---------------
-
-* Render tiles to intermediate texture (render buffer) with wrapping and then draw with single call?
+* Refactor maps, layers and controls
 
 
 vim: set filetype=markdown spell spelllang=en textwidth=0:
