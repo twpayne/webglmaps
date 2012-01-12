@@ -81,13 +81,25 @@ webglmaps.main = function(canvas) {
        * @param {goog.events.KeyEvent} event Event.
        */
       function(event) {
-        var index;
+        var camera, index;
         if (event.charCode == 'f'.charCodeAt(0)) {
           var fragmentShader = tileLayer.getFragmentShader();
           index = goog.array.indexOf(fragmentShaders, fragmentShader);
           index = goog.math.modulo(index + 1, fragmentShaders.length);
           fragmentShader = fragmentShaders[index];
           tileLayer.setFragmentShader(fragmentShader);
+        } else if (event.charCode == 'r'.charCodeAt(0)) {
+          camera = map.getCamera();
+          camera.setRotation(0);
+          if (camera.isDirty()) {
+            map.redraw();
+          }
+        } else if (event.charCode == 'u'.charCodeAt(0)) {
+          camera = map.getCamera();
+          camera.setRotation(camera.getRotation() + Math.PI);
+          if (camera.isDirty()) {
+            map.redraw();
+          }
         } else if (event.charCode == 'v'.charCodeAt(0)) {
           var vertexShader = tileLayer.getVertexShader();
           index = goog.array.indexOf(vertexShaders, vertexShader);
