@@ -6,6 +6,33 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.object');
 goog.require('webglmaps.Tile');
+goog.require('webglmaps.TileUrl');
+
+
+
+/**
+ * @constructor
+ */
+webglmaps.TileLayerOptions = function() {
+};
+
+
+/**
+ * @type {string|undefined}
+ */
+webglmaps.TileLayerOptions.prototype.crossDomain;
+
+
+/**
+ * @type {?number}
+ */
+webglmaps.TileLayerOptions.prototype.maxZ;
+
+
+/**
+ * @type {number|undefined}
+ */
+webglmaps.TileLayerOptions.prototype.minZ;
 
 
 
@@ -13,12 +40,13 @@ goog.require('webglmaps.Tile');
  * @constructor
  * @extends {goog.events.EventTarget}
  * @param {webglmaps.TileUrl} tileUrl Tile URL.
- * @param {number=} opt_minZ Min Z.
- * @param {number=} opt_maxZ Max Z.
+ * @param {webglmaps.TileLayerOptions|Object=} opt_options Options.
  */
-webglmaps.TileLayer = function(tileUrl, opt_minZ, opt_maxZ) {
+webglmaps.TileLayer = function(tileUrl, opt_options) {
 
   goog.base(this);
+
+  var options = /** @type {webglmaps.TileLayerOptions} */ (opt_options || {});
 
   /**
    * @private
@@ -40,21 +68,21 @@ webglmaps.TileLayer = function(tileUrl, opt_minZ, opt_maxZ) {
 
   /**
    * @private
-   * @type {?number}
-   */
-  this.minZ_ = opt_minZ || 0;
-
-  /**
-   * @private
-   * @type {?number}
-   */
-  this.maxZ_ = opt_maxZ || null;
-
-  /**
-   * @private
    * @type {string}
    */
-  this.crossDomain_ = '';
+  this.crossDomain_ = options.crossDomain || '';
+
+  /**
+   * @private
+   * @type {?number}
+   */
+  this.maxZ_ = options.maxZ || null;
+
+  /**
+   * @private
+   * @type {?number}
+   */
+  this.minZ_ = options.minZ || 0;
 
   /**
    * @private

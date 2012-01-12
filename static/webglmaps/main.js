@@ -45,7 +45,9 @@ webglmaps.main = function(canvas) {
       webglmaps.tileurl.fromTemplate(
           'http://c.tile.openstreetmap.org/{z}/{x}/{y}.png')
     ]);
-    tileLayer = new webglmaps.TileLayer(tileUrl, 0, 18);
+    tileLayer = new webglmaps.TileLayer(tileUrl, {
+      maxZ: 18
+    });
   }
   map.addTileLayer(tileLayer);
   var mouseNavigation = new webglmaps.MouseNavigation();
