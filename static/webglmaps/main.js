@@ -1,11 +1,20 @@
 goog.provide('webglmaps.main');
 
+goog.require('goog.array');
 goog.require('goog.color');
 goog.require('goog.debug.errorHandlerWeakDep');
+goog.require('goog.events');
+goog.require('goog.events.KeyEvent');
+goog.require('goog.events.KeyHandler');
+goog.require('goog.events.KeyHandler.EventType');
 goog.require('webglmaps.Map');
 goog.require('webglmaps.MouseNavigation');
 goog.require('webglmaps.TileLayer');
 goog.require('webglmaps.TileUrl');
+goog.require('webglmaps.shader.fragment.ColorHalftone');
+goog.require('webglmaps.shader.fragment.Grayscale');
+goog.require('webglmaps.shader.fragment.HexagonalPixelate');
+goog.require('webglmaps.shader.fragment.Invert');
 
 
 /**
@@ -52,6 +61,30 @@ webglmaps.main = function(canvas) {
   map.addTileLayer(tileLayer);
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);
+
+  var fragmentShaders = [
+    null,
+    new webglmaps.shader.fragment.Invert(),
+    new webglmaps.shader.fragment.Grayscale(),
+    new webglmaps.shader.fragment.HexagonalPixelate(),
+    new webglmaps.shader.fragment.ColorHalftone()
+  ];
+  goog.events.listen(
+      new goog.events.KeyHandler(document),
+      goog.events.KeyHandler.EventType.KEY,
+      /**
+       * @param {goog.events.KeyEvent} event Event.
+       */
+      function(event) {
+        window.console.log(event.charCode);
+        if (event.charCode == 102) {
+          var fragmentShader = tileLayer.getFragmentShader();
+          var index = goog.array.indexOf(fragmentShaders, fragmentShader);
+          index = goog.math.modulo(index + 1, fragmentShaders.length);
+          fragmentShader = fragmentShaders[index];
+          tileLayer.setFragmentShader(fragmentShader);
+        }
+      });
 
 };
 goog.exportSymbol('webglmaps.main', webglmaps.main);
