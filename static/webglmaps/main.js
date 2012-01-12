@@ -88,6 +88,8 @@ webglmaps.main = function(canvas) {
           index = goog.math.modulo(index + 1, fragmentShaders.length);
           fragmentShader = fragmentShaders[index];
           tileLayer.setFragmentShader(fragmentShader);
+        } else if (event.charCode == 'i'.charCodeAt(0)) {
+          tileLayer.setInterimTiles(!tileLayer.getInterimTiles());
         } else if (event.charCode == 'r'.charCodeAt(0)) {
           camera = map.getCamera();
           camera.setRotation(0);
