@@ -58,6 +58,11 @@ webglmaps.Program = function(fragmentShader, vertexShader) {
   this.textureUniform = new webglmaps.Uniform('uTexture');
 
   /**
+   * @type {webglmaps.Uniform}
+   */
+  this.timeUniform = new webglmaps.Uniform('uTime');
+
+  /**
    * @type {webglmaps.VertexAttrib}
    */
   this.position = new webglmaps.VertexAttrib('aPosition');
@@ -102,6 +107,7 @@ webglmaps.Program.prototype.setGL = function(gl) {
     this.alphaUniform.setGL(null);
     this.mvpMatrixUniform.setGL(null);
     this.textureUniform.setGL(null);
+    this.timeUniform.setGL(null);
     this.position.setGL(null);
     this.texCoord.setGL(null);
   }
@@ -110,6 +116,7 @@ webglmaps.Program.prototype.setGL = function(gl) {
     this.alphaUniform.setGL(gl);
     this.mvpMatrixUniform.setGL(gl);
     this.textureUniform.setGL(gl);
+    this.timeUniform.setGL(gl);
     this.position.setGL(gl);
     this.texCoord.setGL(gl);
     this.fragmentShader_.setGL(gl);
@@ -125,6 +132,7 @@ webglmaps.Program.prototype.setGL = function(gl) {
     this.alphaUniform.setProgram(program);
     this.mvpMatrixUniform.setProgram(program);
     this.textureUniform.setProgram(program);
+    this.timeUniform.setProgram(program);
     this.position.setProgram(program);
     this.texCoord.setProgram(program);
     this.program_ = program;

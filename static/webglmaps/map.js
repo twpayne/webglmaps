@@ -361,6 +361,7 @@ webglmaps.Map.prototype.renderTileLayer_ =
     this.program_ = program;
   }
   program.mvpMatrixUniform.setMatrix4fv(false, this.positionToViewportMatrix_);
+  program.timeUniform.set1f(this.time_);
   if (tileLayer.getRenderInterimTiles()) {
     return this.renderTileLayerWithInterimTiles_(tileLayer, z, x0, y0, x1, y1);
   } else {
