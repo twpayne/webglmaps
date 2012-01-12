@@ -6,11 +6,15 @@ User interface
 
 * Zoom to/from mouse cursor
 
+* Fix shaky pan when animating
+
 
 Functionality
 -------------
 
-* Add saturation control fragment shader
+* Add parameterizable fragment shaders
+
+* Add tile decimation
 
 
 Portability
@@ -55,6 +59,12 @@ Architecture
 * Refactor :-)
 
 * Add ICacheable interface and generic LRU cache
+
+
+Open questions
+--------------
+
+* Render tiles to intermediate texture (render buffer) with wrapping and then draw with single call?
 
 
 vim: set filetype=markdown spell spelllang=en textwidth=0:
