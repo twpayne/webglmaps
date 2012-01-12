@@ -16,7 +16,7 @@ goog.inherits(webglmaps.tilequeue.Null, webglmaps.TileQueue);
 
 
 /**
- * @param {webglmaps.Tile} tile Tile.
+ * @inheritDoc
  */
 webglmaps.tilequeue.Null.prototype.enqueue = function(tile) {
   tile.image.src = tile.src;

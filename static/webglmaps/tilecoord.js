@@ -62,7 +62,7 @@ webglmaps.TileCoord.prototype.hash = function() {
 
 
 /**
- * @return {string} String.
+ * @inheritDoc
  */
 webglmaps.TileCoord.prototype.toString = function() {
   return [this.z, this.x, this.y].join('/');

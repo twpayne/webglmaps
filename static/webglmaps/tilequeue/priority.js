@@ -46,7 +46,7 @@ goog.inherits(webglmaps.tilequeue.Priority, webglmaps.TileQueue);
 
 
 /**
- * @param {webglmaps.Tile} tile Tile.
+ * @inheritDoc
  */
 webglmaps.tilequeue.Priority.prototype.enqueue = function(tile) {
   var priority = this.getPriority(tile);
