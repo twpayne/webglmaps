@@ -97,6 +97,12 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
+   * @type {number}
+   */
+  this.firstUsedTime_ = 0;
+
+  /**
+   * @private
    * @type {goog.vec.Mat4.Type}
    */
   this.positionToViewportMatrix_ = goog.vec.Mat4.create();
@@ -294,6 +300,9 @@ webglmaps.Map.prototype.render_ = function() {
   this.animating_ = false;
   this.dirty_ = false;
   this.time_ = Date.now();
+  if (this.firstUsedTime_ === 0) {
+    this.firstUsedTime_ = this.time_;
+  }
 
   var gl = this.gl_;
 
@@ -348,10 +357,13 @@ webglmaps.Map.prototype.render_ = function() {
 webglmaps.Map.prototype.renderTileLayer_ =
     function(tileLayer, z, x0, y0, x1, y1) {
   var gl = this.gl_;
+  var animate = false;
   var fragmentShader = tileLayer.getFragmentShader() ||
       this.defaultFragmentShader_;
+  animate = animate || fragmentShader.isAnimated();
   var vertexShader = tileLayer.getVertexShader() ||
       this.defaultVertexShader_;
+  animate = animate || vertexShader.isAnimated();
   var program = this.programCache_.get(fragmentShader, vertexShader);
   if (program !== this.program_) {
     if (program.getGL() !== gl) {
@@ -361,13 +373,18 @@ webglmaps.Map.prototype.renderTileLayer_ =
     this.program_ = program;
   }
   program.mvpMatrixUniform.setMatrix4fv(false, this.positionToViewportMatrix_);
-  program.timeUniform.set1f(this.time_);
-  if (tileLayer.getRenderInterimTiles()) {
-    return this.renderTileLayerWithInterimTiles_(tileLayer, z, x0, y0, x1, y1);
-  } else {
-    return this.renderTileLayerWithoutInterimTiles_(
-        tileLayer, z, x0, y0, x1, y1);
+  program.timeUniform.set1f(this.time_ - this.firstUsedTime_);
+  if (animate) {
+    goog.asserts.assert(!goog.isNull(program.timeUniform.location_));
   }
+  if (tileLayer.getRenderInterimTiles()) {
+    animate = this.renderTileLayerWithInterimTiles_(
+        tileLayer, z, x0, y0, x1, y1) || animate;
+  } else {
+    animate = this.renderTileLayerWithoutInterimTiles_(
+        tileLayer, z, x0, y0, x1, y1) || animate;
+  }
+  return animate;
 };
 
 
