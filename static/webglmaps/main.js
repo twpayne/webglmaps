@@ -14,6 +14,7 @@ goog.require('webglmaps.TileUrl');
 goog.require('webglmaps.shader.fragment.ColorHalftone');
 goog.require('webglmaps.shader.fragment.Grayscale');
 goog.require('webglmaps.shader.fragment.HexagonalPixelate');
+goog.require('webglmaps.shader.fragment.HueSaturation');
 goog.require('webglmaps.shader.fragment.Invert');
 goog.require('webglmaps.shader.vertex.Wobble');
 
@@ -68,7 +69,8 @@ webglmaps.main = function(canvas) {
     new webglmaps.shader.fragment.Invert(),
     new webglmaps.shader.fragment.Grayscale(),
     new webglmaps.shader.fragment.HexagonalPixelate(),
-    new webglmaps.shader.fragment.ColorHalftone()
+    new webglmaps.shader.fragment.ColorHalftone(),
+    new webglmaps.shader.fragment.HueSaturation()
   ];
   var vertexShaders = [
     null,
