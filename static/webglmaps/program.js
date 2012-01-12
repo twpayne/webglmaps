@@ -135,6 +135,8 @@ webglmaps.Program.prototype.setGL = function(gl) {
     this.timeUniform.setProgram(program);
     this.position.setProgram(program);
     this.texCoord.setProgram(program);
+    this.fragmentShader_.setProgram(program);
+    this.vertexShader_.setProgram(program);
     this.program_ = program;
   }
 };

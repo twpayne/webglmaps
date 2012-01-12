@@ -109,6 +109,9 @@ webglmaps.Shader.prototype.setGL = function(gl) {
   this.gl_ = gl;
   if (!goog.isNull(gl)) {
     this.compile();
+    goog.array.forEach(this.uniforms_, function(uniform) {
+      uniform.setGL(gl);
+    });
   }
 };
 
@@ -124,7 +127,13 @@ webglmaps.Shader.prototype.setProgram = function(program) {
 
 
 /**
- * @return {string} String.
+ */
+webglmaps.Shader.prototype.setUniforms = function() {
+};
+
+
+/**
+ * @inheritDoc
  */
 webglmaps.Shader.prototype.toString = function() {
   return goog.getUid(this).toString();
