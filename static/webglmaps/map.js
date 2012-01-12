@@ -389,9 +389,6 @@ webglmaps.Map.prototype.renderTileLayer_ =
   }
   program.mvpMatrixUniform.setMatrix4fv(false, this.positionToViewportMatrix_);
   program.timeUniform.set1f(this.time_ - this.firstUsedTime_);
-  if (animate) {
-    goog.asserts.assert(!goog.isNull(program.timeUniform.location_));
-  }
   if (tileLayer.getInterimTiles()) {
     animate = this.renderTileLayerWithInterimTiles_(
         tileLayer, z, x0, y0, x1, y1) || animate;
