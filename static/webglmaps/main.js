@@ -7,6 +7,7 @@ goog.require('goog.events');
 goog.require('goog.events.KeyEvent');
 goog.require('goog.events.KeyHandler');
 goog.require('goog.events.KeyHandler.EventType');
+goog.require('goog.math');
 goog.require('webglmaps.Map');
 goog.require('webglmaps.MouseNavigation');
 goog.require('webglmaps.TileLayer');
@@ -64,13 +65,14 @@ webglmaps.main = function(canvas) {
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);
 
+  var hsFragmentShader = new webglmaps.shader.fragment.HueSaturation();
   var fragmentShaders = [
     null,
+    hsFragmentShader,
     new webglmaps.shader.fragment.Invert(),
     new webglmaps.shader.fragment.Grayscale(),
     new webglmaps.shader.fragment.HexagonalPixelate(),
-    new webglmaps.shader.fragment.ColorHalftone(),
-    new webglmaps.shader.fragment.HueSaturation()
+    new webglmaps.shader.fragment.ColorHalftone()
   ];
   var vertexShaders = [
     null,
@@ -84,12 +86,22 @@ webglmaps.main = function(canvas) {
        */
       function(event) {
         var camera, index;
-        if (event.charCode == 'f'.charCodeAt(0)) {
+        if (event.charCode == 'H'.charCodeAt(0)) {
+          hsFragmentShader.setHue(hsFragmentShader.getHue() + 0.25);
+          map.redraw();
+        } else if (event.charCode == 'S'.charCodeAt(0)) {
+          hsFragmentShader.setSaturation(goog.math.clamp(
+              hsFragmentShader.getSaturation() + 0.25, -1, 1));
+          map.redraw();
+        } else if (event.charCode == 'f'.charCodeAt(0)) {
           var fragmentShader = tileLayer.getFragmentShader();
           index = goog.array.indexOf(fragmentShaders, fragmentShader);
           index = goog.math.modulo(index + 1, fragmentShaders.length);
           fragmentShader = fragmentShaders[index];
           tileLayer.setFragmentShader(fragmentShader);
+        } else if (event.charCode == 'h'.charCodeAt(0)) {
+          hsFragmentShader.setHue(hsFragmentShader.getHue() - 0.25);
+          map.redraw();
         } else if (event.charCode == 'i'.charCodeAt(0)) {
           tileLayer.setInterimTiles(!tileLayer.getInterimTiles());
         } else if (event.charCode == 'r'.charCodeAt(0)) {
@@ -98,6 +110,11 @@ webglmaps.main = function(canvas) {
           if (camera.isDirty()) {
             map.redraw();
           }
+        } else if (event.charCode == 's'.charCodeAt(0)) {
+          window.console.log('reducing saturation');
+          hsFragmentShader.setSaturation(goog.math.clamp(
+              hsFragmentShader.getSaturation() - 0.25, -1, 1));
+          map.redraw();
         } else if (event.charCode == 'u'.charCodeAt(0)) {
           camera = map.getCamera();
           camera.setRotation(camera.getRotation() + Math.PI);
