@@ -61,8 +61,9 @@ webglmaps.Uniform.prototype.setGL = function(gl) {
 webglmaps.Uniform.prototype.set1f = function(value) {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
-  goog.asserts.assert(!goog.isNull(this.location_));
-  gl.uniform1f(this.location_, value);
+  if (!goog.isNull(this.location_)) {
+    gl.uniform1f(this.location_, value);
+  }
 };
 
 
@@ -72,8 +73,9 @@ webglmaps.Uniform.prototype.set1f = function(value) {
 webglmaps.Uniform.prototype.set1i = function(value) {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
-  goog.asserts.assert(!goog.isNull(this.location_));
-  gl.uniform1f(this.location_, value);
+  if (!goog.isNull(this.location_)) {
+    gl.uniform1i(this.location_, value);
+  }
 };
 
 
@@ -84,8 +86,9 @@ webglmaps.Uniform.prototype.set1i = function(value) {
 webglmaps.Uniform.prototype.setMatrix4fv = function(transpose, value) {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
-  goog.asserts.assert(!goog.isNull(this.location_));
-  gl.uniformMatrix4fv(this.location_, transpose, value);
+  if (!goog.isNull(this.location_)) {
+    gl.uniformMatrix4fv(this.location_, transpose, value);
+  }
 };
 
 
