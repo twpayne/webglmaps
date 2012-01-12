@@ -10,11 +10,7 @@ User interface
 Functionality
 -------------
 
-* Per-layer shaders
-
 * Add saturation control fragment shader
-
-* Dynamic shader switching
 
 * Vertex shader special effects
 

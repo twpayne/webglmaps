@@ -15,10 +15,15 @@ goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
 goog.require('webglmaps.Camera');
 goog.require('webglmaps.Program');
+goog.require('webglmaps.ProgramCache');
 goog.require('webglmaps.TileCoord');
 goog.require('webglmaps.TileLayer');
 goog.require('webglmaps.TileUrl');
 goog.require('webglmaps.TileVertices');
+goog.require('webglmaps.shader.Fragment');
+goog.require('webglmaps.shader.Vertex');
+goog.require('webglmaps.shader.fragment.Default');
+goog.require('webglmaps.shader.vertex.Default');
 goog.require('webglmaps.tilequeue.Priority');
 goog.require('webglmaps.transitions');
 goog.require('webglmaps.utils');
@@ -144,11 +149,27 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
+   * @type {webglmaps.shader.Fragment}
+   */
+  this.defaultFragmentShader_ = new webglmaps.shader.fragment.Default();
+
+  /**
+   * @private
+   * @type {webglmaps.shader.Vertex}
+   */
+  this.defaultVertexShader_ = new webglmaps.shader.vertex.Default();
+
+  /**
+   * @private
+   * @type {webglmaps.ProgramCache}
+   */
+  this.programCache_ = new webglmaps.ProgramCache();
+
+  /**
+   * @private
    * @type {webglmaps.Program}
    */
-  this.program_ = new webglmaps.Program();
-  this.program_.setGL(gl);
-  this.program_.use();
+  this.program_ = null;
 
   /**
    * @private
@@ -189,8 +210,9 @@ webglmaps.Map.prototype.disposeInternal = function() {
   goog.disposeAll(this.tileLayers_);
   this.tileLayers_ = [];
   gl.useProgram(null);
-  goog.dispose(this.program_);
   this.program_ = null;
+  goog.dispose(this.programCache_);
+  this.programCache_ = null;
   this.gl_ = null;
 };
 
@@ -283,9 +305,6 @@ webglmaps.Map.prototype.render_ = function() {
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  this.program_.mvpMatrixUniform.setMatrix4fv(
-      false, this.positionToViewportMatrix_);
-
   var z = this.camera_.getTileZoom(), n = 1 << z;
   var xs = new Array(4), ys = new Array(4);
   var i, position = goog.vec.Vec3.create();
@@ -328,6 +347,20 @@ webglmaps.Map.prototype.render_ = function() {
  */
 webglmaps.Map.prototype.renderTileLayer_ =
     function(tileLayer, z, x0, y0, x1, y1) {
+  var gl = this.gl_;
+  var fragmentShader = tileLayer.getFragmentShader() ||
+      this.defaultFragmentShader_;
+  var vertexShader = tileLayer.getVertexShader() ||
+      this.defaultVertexShader_;
+  var program = this.programCache_.get(fragmentShader, vertexShader);
+  if (program !== this.program_) {
+    if (program.getGL() !== gl) {
+      program.setGL(gl);
+    }
+    program.use();
+    this.program_ = program;
+  }
+  program.mvpMatrixUniform.setMatrix4fv(false, this.positionToViewportMatrix_);
   if (tileLayer.getRenderInterimTiles()) {
     return this.renderTileLayerWithInterimTiles_(tileLayer, z, x0, y0, x1, y1);
   } else {

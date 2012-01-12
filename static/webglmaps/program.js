@@ -5,18 +5,16 @@ goog.require('goog.asserts');
 goog.require('webglmaps.VertexAttrib');
 goog.require('webglmaps.shader.Fragment');
 goog.require('webglmaps.shader.Vertex');
-goog.require('webglmaps.shader.fragment.Default');
-goog.require('webglmaps.shader.vertex.Default');
 
 
 
 /**
  * @constructor
  * @extends {goog.Disposable}
- * @param {webglmaps.shader.Fragment=} opt_fragmentShader Fragment shader.
- * @param {webglmaps.shader.Vertex=} opt_vertexShader Vertex shader.
+ * @param {webglmaps.shader.Fragment} fragmentShader Fragment shader.
+ * @param {webglmaps.shader.Vertex} vertexShader Vertex shader.
  */
-webglmaps.Program = function(opt_fragmentShader, opt_vertexShader) {
+webglmaps.Program = function(fragmentShader, vertexShader) {
 
   goog.base(this);
 
@@ -30,15 +28,13 @@ webglmaps.Program = function(opt_fragmentShader, opt_vertexShader) {
    * @private
    * @type {webglmaps.shader.Fragment}
    */
-  this.fragmentShader_ =
-      opt_fragmentShader || new webglmaps.shader.fragment.Default();
+  this.fragmentShader_ = fragmentShader;
 
   /**
    * @private
    * @type {webglmaps.shader.Vertex}
    */
-  this.vertexShader_ =
-      opt_vertexShader || new webglmaps.shader.vertex.Default();
+  this.vertexShader_ = vertexShader;
 
   /**
    * @private
@@ -81,6 +77,14 @@ goog.inherits(webglmaps.Program, goog.Disposable);
 webglmaps.Program.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
   this.setGL(null);
+};
+
+
+/**
+ * @return {WebGLRenderingContext} GL.
+ */
+webglmaps.Program.prototype.getGL = function() {
+  return this.gl_;
 };
 
 

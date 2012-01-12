@@ -7,6 +7,8 @@ goog.require('goog.events.EventType');
 goog.require('goog.object');
 goog.require('webglmaps.Tile');
 goog.require('webglmaps.TileUrl');
+goog.require('webglmaps.shader.Fragment');
+goog.require('webglmaps.shader.Vertex');
 
 
 
@@ -24,6 +26,12 @@ webglmaps.TileLayerOptions.prototype.crossDomain;
 
 
 /**
+ * @type {webglmaps.shader.Fragment|undefined}
+ */
+webglmaps.TileLayerOptions.prototype.fragmentShader;
+
+
+/**
  * @type {?number}
  */
 webglmaps.TileLayerOptions.prototype.maxZ;
@@ -33,6 +41,12 @@ webglmaps.TileLayerOptions.prototype.maxZ;
  * @type {number|undefined}
  */
 webglmaps.TileLayerOptions.prototype.minZ;
+
+
+/**
+ * @type {webglmaps.shader.Vertex|undefined}
+ */
+webglmaps.TileLayerOptions.prototype.vertexShader;
 
 
 
@@ -74,6 +88,12 @@ webglmaps.TileLayer = function(tileUrl, opt_options) {
 
   /**
    * @private
+   * @type {webglmaps.shader.Fragment}
+   */
+  this.fragmentShader_ = options.fragmentShader || null;
+
+  /**
+   * @private
    * @type {?number}
    */
   this.maxZ_ = options.maxZ || null;
@@ -83,6 +103,12 @@ webglmaps.TileLayer = function(tileUrl, opt_options) {
    * @type {?number}
    */
   this.minZ_ = options.minZ || 0;
+
+  /**
+   * @private
+   * @type {webglmaps.shader.Vertex}
+   */
+  this.vertexShader_ = options.vertexShader || null;
 
   /**
    * @private
@@ -98,6 +124,14 @@ webglmaps.TileLayer = function(tileUrl, opt_options) {
 
 };
 goog.inherits(webglmaps.TileLayer, goog.events.EventTarget);
+
+
+/**
+ * @protected
+ */
+webglmaps.TileLayer.prototype.dispatchChangeEvent = function() {
+  this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE));
+};
 
 
 /**
@@ -129,6 +163,14 @@ webglmaps.TileLayer.prototype.findInterimTile = function(tileCoord) {
     }
   }
   return null;
+};
+
+
+/**
+ * @return {webglmaps.shader.Fragment} Fragment shader.
+ */
+webglmaps.TileLayer.prototype.getFragmentShader = function() {
+  return this.fragmentShader_;
 };
 
 
@@ -180,12 +222,20 @@ webglmaps.TileLayer.prototype.getTile = function(tileCoord, tileQueue) {
 
 
 /**
+ * @return {webglmaps.shader.Vertex} Vertex shader.
+ */
+webglmaps.TileLayer.prototype.getVertexShader = function() {
+  return this.vertexShader_;
+};
+
+
+/**
  * @param {goog.events.Event} event Event.
  */
 webglmaps.TileLayer.prototype.handleTileChange = function(event) {
   var tile = /** @type {webglmaps.Tile} */ event.target;
   if (tile.getLastUsedTime() == this.lastUsedTime_) {
-    this.dispatchEvent(new goog.events.Event(goog.events.EventType.CHANGE));
+    this.dispatchChangeEvent();
   }
 };
 
@@ -198,6 +248,15 @@ webglmaps.TileLayer.prototype.handleTileDrop = function(event) {
   goog.asserts.assert(tile.tileCoord in this.tiles_);
   delete this.tiles_[tile.tileCoord];
   goog.dispose(tile);
+};
+
+
+/**
+ * @param {webglmaps.shader.Fragment} fragmentShader Fragment shader.
+ */
+webglmaps.TileLayer.prototype.setFragmentShader = function(fragmentShader) {
+  this.fragmentShader_ = fragmentShader;
+  this.dispatchChangeEvent();
 };
 
 
@@ -217,4 +276,13 @@ webglmaps.TileLayer.prototype.setGL = function(gl) {
  */
 webglmaps.TileLayer.prototype.setUsedTime = function(usedTime) {
   this.lastUsedTime_ = usedTime;
+};
+
+
+/**
+ * @param {webglmaps.shader.Vertex} vertexShader Vertex shader.
+ */
+webglmaps.TileLayer.prototype.setVertexShader = function(vertexShader) {
+  this.vertexShader_ = vertexShader;
+  this.dispatchChangeEvent();
 };

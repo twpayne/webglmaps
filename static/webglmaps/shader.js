@@ -113,3 +113,11 @@ webglmaps.Shader.prototype.setProgram = function(program) {
     uniform.setProgram(program);
   });
 };
+
+
+/**
+ * @return {string} String.
+ */
+webglmaps.Shader.prototype.toString = function() {
+  return goog.getUid(this).toString();
+};
