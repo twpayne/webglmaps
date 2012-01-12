@@ -12,8 +12,6 @@ Functionality
 
 * Add saturation control fragment shader
 
-* Vertex shader special effects
-
 
 Portability
 -----------
@@ -36,11 +34,9 @@ Quality
 Performance
 -----------
 
-* Add view frustum culling
+* Add view frustum culling (needs to take into account vertex shader transformations)
 
 * Cut up interim tiles
-
-* Request animation frame earlier in `Map.render_` (
 
 
 Back end
