@@ -201,7 +201,7 @@ webglmaps.Map.prototype.addTileLayer = function(tileLayer) {
   this.layerChangeListeners_[goog.getUid(tileLayer)] = goog.events.listen(
       tileLayer, goog.events.EventType.CHANGE, this.handleTileLayerChange,
       false, this);
-  this.requestRedraw_();
+  this.redraw();
 };
 
 
@@ -285,7 +285,20 @@ webglmaps.Map.prototype.handleResize = function(event) {
 webglmaps.Map.prototype.handleTileLayerChange = function(event) {
   var tileLayer = /** @type {webglmaps.TileLayer} */ event.target;
   if (tileLayer.getLastUsedTime() == this.time_) {
-    this.requestRedraw_();
+    this.redraw();
+  }
+};
+
+
+/**
+ */
+webglmaps.Map.prototype.redraw = function() {
+  if (!this.animating_) {
+    if (this.frozen_ <= 0) {
+      this.render_();
+    } else {
+      this.dirty_ = true;
+    }
   }
 };
 
@@ -514,25 +527,11 @@ webglmaps.Map.prototype.renderTileLayerWithoutInterimTiles_ =
 
 
 /**
- * @private
- */
-webglmaps.Map.prototype.requestRedraw_ = function() {
-  if (!this.animating_) {
-    if (this.frozen_ <= 0) {
-      this.render_();
-    } else {
-      this.dirty_ = true;
-    }
-  }
-};
-
-
-/**
  * @param {webglmaps.Camera} camera Camera.
  */
 webglmaps.Map.prototype.setCamera = function(camera) {
   this.camera_ = camera;
-  this.requestRedraw_();
+  this.redraw();
 };
 
 
@@ -546,7 +545,7 @@ webglmaps.Map.prototype.setSize_ = function(size) {
     this.gl_.canvas.height = size.height;
     this.gl_.viewport(0, 0, size.width, size.height);
     this.updateMatrices_();
-    this.requestRedraw_();
+    this.redraw();
   }
 };
 

@@ -131,7 +131,7 @@ webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
     camera.setRotation(this.initialRotation_ + angle);
   }
   if (camera.isDirty()) {
-    this.map_.requestRedraw_();
+    this.map_.redraw();
   }
   // FIXME subtle bug here: if the map is animating then matrices won't be
   //       updated immediately
@@ -173,7 +173,7 @@ webglmaps.MouseNavigation.prototype.handleMouseWheel = function(event) {
     zoom -= goog.math.sign(event.deltaY) * this.zoomStep_;
     camera.setZoom(zoom);
     if (camera.isDirty()) {
-      this.map_.requestRedraw_();
+      this.map_.redraw();
     }
   }
 };
