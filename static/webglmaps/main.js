@@ -43,11 +43,16 @@ webglmaps.main = function(canvas) {
   var bgColor = goog.color.hexToRgb('#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
 
-  var tileLayer, tileUrl;
+  var tileLayer, tileLayer2 = null, tileUrl;
   if (webglmaps.USE_LOCAL_TILESERVER) {
     tileUrl = webglmaps.tileurl.fromTemplate(
         'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
     tileLayer = new webglmaps.TileLayer(tileUrl);
+    var tileUrl2 = webglmaps.tileurl.fromTemplate(
+        'http://localhost:8000/data/image/1/tiles/{z}/{x}/{y}');
+    tileLayer2 = new webglmaps.TileLayer(tileUrl2, {
+      visible: false
+    });
   } else {
     tileUrl = webglmaps.tileurl.fromTileUrls([
       webglmaps.tileurl.fromTemplate(
@@ -62,6 +67,9 @@ webglmaps.main = function(canvas) {
     });
   }
   map.addTileLayer(tileLayer);
+  if (!goog.isNull(tileLayer2)) {
+    map.addTileLayer(tileLayer2);
+  }
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);
 
@@ -116,6 +124,11 @@ webglmaps.main = function(canvas) {
           }
         } else if (event.charCode == 'i'.charCodeAt(0)) {
           tileLayer.setInterimTiles(!tileLayer.getInterimTiles());
+        } else if (event.charCode == 'l'.charCodeAt(0)) {
+          if (!goog.isNull(tileLayer2)) {
+            tileLayer2.setVisible(!tileLayer2.getVisible());
+            map.redraw();
+          }
         } else if (event.charCode == 'r'.charCodeAt(0)) {
           camera = map.getCamera();
           camera.setRotation(0);
