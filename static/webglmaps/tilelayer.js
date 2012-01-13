@@ -55,6 +55,12 @@ webglmaps.TileLayerOptions.prototype.minZ;
 webglmaps.TileLayerOptions.prototype.vertexShader;
 
 
+/**
+ * @type {boolean}
+ */
+webglmaps.TileLayerOptions.prototype.visible;
+
+
 
 /**
  * @constructor
@@ -121,6 +127,12 @@ webglmaps.TileLayer = function(tileUrl, opt_options) {
    * @type {webglmaps.shader.Vertex}
    */
   this.vertexShader_ = options.vertexShader || null;
+
+  /**
+   * @private
+   * @type {boolean}
+   */
+  this.visible_ = goog.isDef(options.visible) ? options.visible : true;
 
   /**
    * @private
@@ -236,6 +248,14 @@ webglmaps.TileLayer.prototype.getVertexShader = function() {
 
 
 /**
+ * @return {boolean} Visible.
+ */
+webglmaps.TileLayer.prototype.getVisible = function() {
+  return this.visible_;
+};
+
+
+/**
  * @param {goog.events.Event} event Event.
  */
 webglmaps.TileLayer.prototype.handleTileChange = function(event) {
@@ -302,4 +322,12 @@ webglmaps.TileLayer.prototype.setUsedTime = function(usedTime) {
 webglmaps.TileLayer.prototype.setVertexShader = function(vertexShader) {
   this.vertexShader_ = vertexShader;
   this.dispatchChangeEvent();
+};
+
+
+/**
+ * @param {boolean} visible Visible.
+ */
+webglmaps.TileLayer.prototype.setVisible = function(visible) {
+  this.visible_ = visible;
 };

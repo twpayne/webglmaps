@@ -201,7 +201,9 @@ webglmaps.Map.prototype.addTileLayer = function(tileLayer) {
   this.layerChangeListeners_[goog.getUid(tileLayer)] = goog.events.listen(
       tileLayer, goog.events.EventType.CHANGE, this.handleTileLayerChange,
       false, this);
-  this.redraw();
+  if (tileLayer.getVisible()) {
+    this.redraw();
+  }
 };
 
 
@@ -343,7 +345,8 @@ webglmaps.Map.prototype.render_ = function() {
   var y1 = goog.math.clamp(Math.max.apply(null, ys), 0, n - 1);
 
   goog.array.forEach(this.tileLayers_, function(tileLayer) {
-    if (this.renderTileLayer_(tileLayer, z, x0, y0, x1, y1)) {
+    if (tileLayer.getVisible() &&
+        this.renderTileLayer_(tileLayer, z, x0, y0, x1, y1)) {
       animate = true;
     }
   }, this);
