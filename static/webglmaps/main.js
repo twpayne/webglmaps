@@ -86,13 +86,23 @@ webglmaps.main = function(canvas) {
        */
       function(event) {
         var camera, index;
-        if (event.charCode == 'H'.charCodeAt(0)) {
-          hsFragmentShader.setHue(hsFragmentShader.getHue() + 0.25);
-          map.redraw();
+        if (event.charCode == '0'.charCodeAt(0)) {
+          if (tileLayer.getFragmentShader() == hsFragmentShader) {
+            hsFragmentShader.setHue(0);
+            hsFragmentShader.setSaturation(0);
+            map.redraw();
+          }
+        } else if (event.charCode == 'H'.charCodeAt(0)) {
+          if (tileLayer.getFragmentShader() == hsFragmentShader) {
+            hsFragmentShader.setHue(hsFragmentShader.getHue() + 0.25);
+            map.redraw();
+          }
         } else if (event.charCode == 'S'.charCodeAt(0)) {
-          hsFragmentShader.setSaturation(goog.math.clamp(
-              hsFragmentShader.getSaturation() + 0.25, -1, 1));
-          map.redraw();
+          if (tileLayer.getFragmentShader() == hsFragmentShader) {
+            hsFragmentShader.setSaturation(goog.math.clamp(
+                hsFragmentShader.getSaturation() + 0.25, -1, 1));
+            map.redraw();
+          }
         } else if (event.charCode == 'f'.charCodeAt(0)) {
           var fragmentShader = tileLayer.getFragmentShader();
           index = goog.array.indexOf(fragmentShaders, fragmentShader);
@@ -100,8 +110,10 @@ webglmaps.main = function(canvas) {
           fragmentShader = fragmentShaders[index];
           tileLayer.setFragmentShader(fragmentShader);
         } else if (event.charCode == 'h'.charCodeAt(0)) {
-          hsFragmentShader.setHue(hsFragmentShader.getHue() - 0.25);
-          map.redraw();
+          if (tileLayer.getFragmentShader() == hsFragmentShader) {
+            hsFragmentShader.setHue(hsFragmentShader.getHue() - 0.25);
+            map.redraw();
+          }
         } else if (event.charCode == 'i'.charCodeAt(0)) {
           tileLayer.setInterimTiles(!tileLayer.getInterimTiles());
         } else if (event.charCode == 'r'.charCodeAt(0)) {
@@ -111,10 +123,11 @@ webglmaps.main = function(canvas) {
             map.redraw();
           }
         } else if (event.charCode == 's'.charCodeAt(0)) {
-          window.console.log('reducing saturation');
-          hsFragmentShader.setSaturation(goog.math.clamp(
-              hsFragmentShader.getSaturation() - 0.25, -1, 1));
-          map.redraw();
+          if (tileLayer.getFragmentShader() == hsFragmentShader) {
+            hsFragmentShader.setSaturation(goog.math.clamp(
+                hsFragmentShader.getSaturation() - 0.25, -1, 1));
+            map.redraw();
+          }
         } else if (event.charCode == 'u'.charCodeAt(0)) {
           camera = map.getCamera();
           camera.setRotation(camera.getRotation() + Math.PI);
