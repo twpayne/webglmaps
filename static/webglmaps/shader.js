@@ -1,27 +1,22 @@
 goog.provide('webglmaps.Shader');
 
-goog.require('goog.Disposable');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.webgl');
+goog.require('webglmaps.GLObject');
 goog.require('webglmaps.Uniform');
 
 
 
 /**
  * @constructor
- * @extends {goog.Disposable}
+ * @extends {webglmaps.GLObject}
  * @param {string} source Source.
  * @param {Array.<webglmaps.Uniform>=} opt_uniforms Uniforms.
  */
 webglmaps.Shader = function(source, opt_uniforms) {
 
   goog.base(this);
-
-  /**
-   * @private
-   * @type {WebGLRenderingContext}
-   */
-  this.gl_ = null;
 
   /**
    * @private
@@ -42,21 +37,20 @@ webglmaps.Shader = function(source, opt_uniforms) {
   this.uniforms_ = opt_uniforms || [];
 
 };
-goog.inherits(webglmaps.Shader, goog.Disposable);
+goog.inherits(webglmaps.Shader, webglmaps.GLObject);
 
 
 /**
  */
 webglmaps.Shader.prototype.compile = function() {
-  var gl = this.gl_;
-  goog.asserts.assert(!goog.isNull(this.gl_));
+  var gl = this.getGL();
   this.shader_ = this.create();
   gl.shaderSource(this.shader_, this.source_);
   gl.compileShader(this.shader_);
-  if (!gl.getShaderParameter(this.shader_, gl.COMPILE_STATUS)) {
+  if (!gl.getShaderParameter(this.shader_, goog.webgl.COMPILE_STATUS)) {
     window.console.log(gl.getShaderInfoLog(this.shader_));
     goog.asserts.assert(
-        gl.getShaderParameter(this.shader_, gl.COMPILE_STATUS));
+        gl.getShaderParameter(this.shader_, goog.webgl.COMPILE_STATUS));
   }
 };
 
@@ -66,15 +60,6 @@ webglmaps.Shader.prototype.compile = function() {
  * @return {WebGLShader} Shader.
  */
 webglmaps.Shader.prototype.create = goog.abstractMethod;
-
-
-/**
- * @protected
- */
-webglmaps.Shader.prototype.disposeInternal = function() {
-  goog.base(this, 'disposeInternal');
-  this.setGL(null);
-};
 
 
 /**
@@ -94,19 +79,19 @@ webglmaps.Shader.prototype.isAnimated = function() {
 
 
 /**
- * @param {WebGLRenderingContext} gl GL.
+ * @inheritDoc
  */
 webglmaps.Shader.prototype.setGL = function(gl) {
-  if (!goog.isNull(this.gl_)) {
+  if (!goog.isNull(this.gl)) {
     goog.array.forEach(this.uniforms_, function(uniform) {
       uniform.setGL(null);
     });
     if (!goog.isNull(this.shader_)) {
-      this.gl_.deleteShader(this.shader_);
+      this.gl.deleteShader(this.shader_);
       this.shader_ = null;
     }
   }
-  this.gl_ = gl;
+  goog.base(this, 'setGL', gl);
   if (!goog.isNull(gl)) {
     this.compile();
     goog.array.forEach(this.uniforms_, function(uniform) {

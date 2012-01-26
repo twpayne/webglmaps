@@ -29,7 +29,7 @@ goog.debug.ErrorHandler = goog.debug.errorHandlerWeakDep;
 /**
  * @define {boolean} Use local tileserver.
  */
-webglmaps.USE_LOCAL_TILESERVER = false;
+webglmaps.USE_LOCAL_TILESERVER = true;
 
 
 /**
@@ -40,8 +40,10 @@ webglmaps.main = function(canvas) {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  var bgColor = goog.color.hexToRgb('#fff');
-  var map = new webglmaps.Map(canvas, 256, bgColor);
+  var map = new webglmaps.Map(canvas, {
+    clearColor: goog.color.hexToRgb('#fff'),
+    tileSize: 256
+  });
 
   var tileLayer, tileLayer2 = null, tileUrl;
   if (webglmaps.USE_LOCAL_TILESERVER) {

@@ -1,61 +1,47 @@
 goog.provide('webglmaps.ArrayBuffer');
 
-goog.require('goog.Disposable');
+goog.require('goog.webgl');
+goog.require('webglmaps.StaticGLObject');
 
 
 
 /**
  * @constructor
- * @extends {goog.Disposable}
+ * @extends {webglmaps.StaticGLObject}
  * @param {WebGLRenderingContext} gl GL.
+ * @param {ArrayBuffer|ArrayBufferView|null|number} data Data.
+ * @param {number} usage Usage.
  */
-webglmaps.ArrayBuffer = function(gl) {
+webglmaps.ArrayBuffer = function(gl, data, usage) {
 
-  goog.base(this);
-
-  /**
-   * @private
-   * @type {WebGLRenderingContext}
-   */
-  this.gl_ = gl;
+  goog.base(this, gl);
 
   /**
    * @private
    * @type {WebGLBuffer}
    */
   this.buffer_ = gl.createBuffer();
+  gl.bindBuffer(goog.webgl.ARRAY_BUFFER, this.buffer_);
+  gl.bufferData(goog.webgl.ARRAY_BUFFER, data, usage);
 
 };
-goog.inherits(webglmaps.ArrayBuffer, goog.Disposable);
+goog.inherits(webglmaps.ArrayBuffer, webglmaps.StaticGLObject);
 
 
 /**
  */
 webglmaps.ArrayBuffer.prototype.bind = function() {
-  var gl = this.gl_;
-  goog.asserts.assert(!goog.isNull(gl));
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer_);
+  var gl = this.getGL();
+  gl.bindBuffer(goog.webgl.ARRAY_BUFFER, this.buffer_);
 };
 
 
 /**
- * @param {Float32Array} data Data.
- * @param {number} usage Usage.
- */
-webglmaps.ArrayBuffer.prototype.data = function(data, usage) {
-  var gl = this.gl_;
-  goog.asserts.assert(!goog.isNull(gl));
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer_);
-  gl.bufferData(gl.ARRAY_BUFFER, data, usage);
-};
-
-
-/**
- * @protected
+ * @inheritDoc
  */
 webglmaps.ArrayBuffer.prototype.disposeInternal = function() {
-  goog.base(this, 'disposeInternal');
-  this.gl_.deleteBuffer(this.buffer_);
+  var gl = this.getGL();
+  gl.deleteBuffer(this.buffer_);
   this.buffer_ = null;
-  this.gl_ = null;
+  goog.base(this, 'disposeInternal');
 };

@@ -1,9 +1,8 @@
 goog.provide('webglmaps.Tile');
 
 goog.require('goog.events');
-goog.require('goog.events.EventHandler');
-goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
+goog.require('webglmaps.EventTargetGLObject');
 goog.require('webglmaps.Texture');
 goog.require('webglmaps.TileCoord');
 
@@ -11,20 +10,14 @@ goog.require('webglmaps.TileCoord');
 
 /**
  * @constructor
+ * @extends {webglmaps.EventTargetGLObject}
  * @param {webglmaps.TileCoord} tileCoord Tile coord.
  * @param {string} src Source.
  * @param {string=} opt_crossOrigin Cross origin.
- * @extends {goog.events.EventTarget}
  */
 webglmaps.Tile = function(tileCoord, src, opt_crossOrigin) {
 
   goog.base(this);
-
-  /**
-   * @private
-   * @type {WebGLRenderingContext}
-   */
-  this.gl_ = null;
 
   /**
    * @type {webglmaps.TileCoord}
@@ -73,16 +66,7 @@ webglmaps.Tile = function(tileCoord, src, opt_crossOrigin) {
   this.lastUsedTime_ = 0;
 
 };
-goog.inherits(webglmaps.Tile, goog.events.EventTarget);
-
-
-/**
- * @protected
- */
-webglmaps.Tile.prototype.disposeInternal = function() {
-  goog.base(this, 'disposeInternal');
-  goog.dispose(this.texture);
-};
+goog.inherits(webglmaps.Tile, webglmaps.EventTargetGLObject);
 
 
 /**
@@ -122,6 +106,7 @@ webglmaps.Tile.prototype.isLoaded = function() {
  * @param {WebGLRenderingContext} gl GL.
  */
 webglmaps.Tile.prototype.setGL = function(gl) {
+  goog.base(this, 'setGL', gl);
   this.texture.setGL(gl);
 };
 

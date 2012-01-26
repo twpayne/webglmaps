@@ -1,7 +1,8 @@
 goog.provide('webglmaps.ProgramCache');
 
-goog.require('goog.Disposable');
+goog.require('goog.dispose');
 goog.require('goog.object');
+goog.require('webglmaps.GLObject');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.shader.Fragment');
 goog.require('webglmaps.shader.Vertex');
@@ -10,7 +11,7 @@ goog.require('webglmaps.shader.Vertex');
 
 /**
  * @constructor
- * @extends {goog.Disposable}
+ * @extends {webglmaps.GLObject}
  */
 webglmaps.ProgramCache = function() {
 
@@ -23,19 +24,7 @@ webglmaps.ProgramCache = function() {
   this.programss_ = {};
 
 };
-goog.inherits(webglmaps.ProgramCache, goog.Disposable);
-
-
-/**
- * @protected
- */
-webglmaps.ProgramCache.prototype.disposeInternal = function() {
-  goog.base(this, 'disposeInternal');
-  goog.object.forEach(this.programss_, function(programs) {
-    goog.disposeAll(goog.object.getValues(programs));
-  });
-  this.programss_ = {};
-};
+goog.inherits(webglmaps.ProgramCache, webglmaps.GLObject);
 
 
 /**
@@ -58,4 +47,15 @@ webglmaps.ProgramCache.prototype.get = function(fragmentShader, vertexShader) {
     programs[vertexShader] = program;
   }
   return program;
+};
+
+
+/**
+ * @inheritDoc
+ */
+webglmaps.ProgramCache.prototype.setGL = function(gl) {
+  goog.object.forEach(this.programss_, function(programs) {
+    goog.disposeAll(goog.object.getValues(programs));
+  });
+  goog.base(this, 'setGL', gl);
 };

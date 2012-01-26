@@ -12,9 +12,9 @@ webglmaps.Camera = function() {
 
   /**
    * @private
-   * @type {goog.vec.Vec3.Type}
+   * @type {goog.vec.Vec3.Float32}
    */
-  this.center_ = goog.vec.Vec3.createFromValues(0.5, 0.5, 0);
+  this.center_ = goog.vec.Vec3.createFloat32FromValues(0.5, 0.5, 0);
 
   /**
    * @private
@@ -30,9 +30,9 @@ webglmaps.Camera = function() {
 
   /**
    * @private
-   * @type {goog.vec.Mat4.Type}
+   * @type {goog.vec.Mat4.Float32}
    */
-  this.matrix_ = goog.vec.Mat4.create();
+  this.matrix_ = goog.vec.Mat4.createFloat32();
 
   /**
    * @private
@@ -50,15 +50,15 @@ webglmaps.Camera = function() {
 
 
 /**
- * @param {goog.vec.Vec3.Type=} opt_result Result.
- * @return {!goog.vec.Vec3.Type} Center.
+ * @param {goog.vec.Vec3.Float32=} opt_result Result.
+ * @return {!goog.vec.Vec3.Float32} Center.
  */
 webglmaps.Camera.prototype.getCenter = function(opt_result) {
   if (goog.isDefAndNotNull(opt_result)) {
     goog.vec.Vec3.setFromArray(opt_result, this.center_);
     return opt_result;
   } else {
-    return goog.vec.Vec3.clone(this.center_);
+    return goog.vec.Vec3.cloneFloat32(this.center_);
   }
 };
 
@@ -72,7 +72,7 @@ webglmaps.Camera.prototype.getRotation = function() {
 
 
 /**
- * @return {goog.vec.Mat4.Type} Matrix.
+ * @return {goog.vec.Mat4.Float32} Matrix.
  */
 webglmaps.Camera.prototype.getMatrix = function() {
   if (this.matrixNeedsUpdate_) {
@@ -82,10 +82,8 @@ webglmaps.Camera.prototype.getMatrix = function() {
     goog.vec.Mat4.rotate(m, this.rotation_, 0, 0, 1);
     goog.vec.Mat4.translate(m, -this.center_[0], -this.center_[1], 0);
     this.matrixNeedsUpdate_ = false;
-    return m;
-  } else {
-    return this.matrix_;
   }
+  return this.matrix_;
 };
 
 
@@ -114,7 +112,7 @@ webglmaps.Camera.prototype.isDirty = function() {
 
 
 /**
- * @param {goog.vec.Vec3.Vec3Like} center Center.
+ * @param {goog.vec.Vec3.AnyType} center Center.
  */
 webglmaps.Camera.prototype.setCenter = function(center) {
   if (!goog.vec.Vec3.equals(this.center_, center)) {

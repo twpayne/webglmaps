@@ -50,15 +50,15 @@ webglmaps.MouseNavigation = function() {
 
   /**
    * @private
-   * @type {goog.vec.Vec3.Type}
+   * @type {goog.vec.Vec3.Float32}
    */
-  this.previousPixel_ = goog.vec.Vec3.create();
+  this.previousPixel_ = goog.vec.Vec3.createFloat32();
 
   /**
    * @private
-   * @type {goog.vec.Vec3.Type}
+   * @type {goog.vec.Vec3.Float32}
    */
-  this.previousPosition_ = goog.vec.Vec3.create();
+  this.previousPosition_ = goog.vec.Vec3.createFloat32();
 
   /**
    * @private
@@ -114,9 +114,9 @@ webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
     return;
   }
   event.preventDefault();
-  var pixel = goog.vec.Vec3.createFromValues(
+  var pixel = goog.vec.Vec3.createFloat32FromValues(
       event.clientX, event.clientY, 0);
-  var position = goog.vec.Vec3.create();
+  var position = goog.vec.Vec3.createFloat32();
   this.map_.fromElementPixelToPosition(pixel, position);
   var camera = this.map_.getCamera();
   if (this.state_ == webglmaps.MouseNavigationState.PANNING) {
