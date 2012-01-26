@@ -3,6 +3,7 @@ goog.provide('webglmaps.Shader');
 goog.require('goog.Disposable');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.webgl');
 goog.require('webglmaps.Uniform');
 
 
@@ -53,10 +54,10 @@ webglmaps.Shader.prototype.compile = function() {
   this.shader_ = this.create();
   gl.shaderSource(this.shader_, this.source_);
   gl.compileShader(this.shader_);
-  if (!gl.getShaderParameter(this.shader_, gl.COMPILE_STATUS)) {
+  if (!gl.getShaderParameter(this.shader_, goog.webgl.COMPILE_STATUS)) {
     window.console.log(gl.getShaderInfoLog(this.shader_));
     goog.asserts.assert(
-        gl.getShaderParameter(this.shader_, gl.COMPILE_STATUS));
+        gl.getShaderParameter(this.shader_, goog.webgl.COMPILE_STATUS));
   }
 };
 

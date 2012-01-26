@@ -2,6 +2,7 @@ goog.provide('webglmaps.Program');
 
 goog.require('goog.Disposable');
 goog.require('goog.asserts');
+goog.require('goog.webgl');
 goog.require('webglmaps.VertexAttrib');
 goog.require('webglmaps.shader.Fragment');
 goog.require('webglmaps.shader.Vertex');
@@ -125,9 +126,10 @@ webglmaps.Program.prototype.setGL = function(gl) {
     gl.attachShader(program, this.fragmentShader_.get());
     gl.attachShader(program, this.vertexShader_.get());
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    if (!gl.getProgramParameter(program, goog.webgl.LINK_STATUS)) {
       window.console.log(gl.getProgramInfoLog(program));
-      goog.asserts.assert(gl.getProgramParameter(program, gl.LINK_STATUS));
+      goog.asserts.assert(
+          gl.getProgramParameter(program, goog.webgl.LINK_STATUS));
     }
     this.alphaUniform.setProgram(program);
     this.mvpMatrixUniform.setProgram(program);
@@ -149,6 +151,6 @@ webglmaps.Program.prototype.use = function() {
   gl.useProgram(this.program_);
   this.position.enableArray();
   this.texCoord.enableArray();
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.enable(goog.webgl.BLEND);
+  gl.blendFunc(goog.webgl.SRC_ALPHA, goog.webgl.ONE_MINUS_SRC_ALPHA);
 };

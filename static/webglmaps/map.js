@@ -13,6 +13,7 @@ goog.require('goog.math');
 goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
+goog.require('goog.webgl');
 goog.require('webglmaps.Camera');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.ProgramCache');
@@ -149,9 +150,9 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   var clearColor = opt_bgColor || [0, 0, 0];
   gl.clearColor(clearColor[0], clearColor[1], clearColor[2], 1);
-  gl.disable(gl.DEPTH_TEST);
-  gl.disable(gl.SCISSOR_TEST);
-  gl.disable(gl.CULL_FACE);
+  gl.disable(goog.webgl.DEPTH_TEST);
+  gl.disable(goog.webgl.SCISSOR_TEST);
+  gl.disable(goog.webgl.CULL_FACE);
 
   /**
    * @private
@@ -213,8 +214,8 @@ webglmaps.Map.prototype.addTileLayer = function(tileLayer) {
 webglmaps.Map.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
   var gl = this.gl_;
-  gl.bindBuffer(gl.ARRAY_BUFFER, null);
-  gl.bindTexture(gl.TEXTURE0, null);
+  gl.bindBuffer(goog.webgl.ARRAY_BUFFER, null);
+  gl.bindTexture(goog.webgl.TEXTURE0, null);
   goog.disposeAll(this.tileLayers_);
   this.tileLayers_ = [];
   gl.useProgram(null);
@@ -327,7 +328,7 @@ webglmaps.Map.prototype.render_ = function() {
     this.camera_.setDirty(false);
   }
 
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.clear(goog.webgl.COLOR_BUFFER_BIT);
 
   var z = this.camera_.getTileZoom(), n = 1 << z;
   var xs = new Array(4), ys = new Array(4);
@@ -468,12 +469,12 @@ webglmaps.Map.prototype.renderTileLayerWithInterimTiles_ =
       }
       tile.texture.bind();
       this.bindTileVertices(tile.tileCoord);
-      program.position.pointer(2, gl.FLOAT, false, 16, 0);
-      program.texCoord.pointer(2, gl.FLOAT, false, 16, 8);
-      gl.activeTexture(gl.TEXTURE0);
+      program.position.pointer(2, goog.webgl.FLOAT, false, 16, 0);
+      program.texCoord.pointer(2, goog.webgl.FLOAT, false, 16, 8);
+      gl.activeTexture(goog.webgl.TEXTURE0);
       program.textureUniform.set1i(0);
       program.alphaUniform.set1f(alpha);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.drawArrays(goog.webgl.TRIANGLE_STRIP, 0, 4);
     }, this);
   }, this);
   return animate;
@@ -516,12 +517,12 @@ webglmaps.Map.prototype.renderTileLayerWithoutInterimTiles_ =
           }
           tile.texture.bind();
           this.bindTileVertices(tileCoord);
-          program.position.pointer(2, gl.FLOAT, false, 16, 0);
-          program.texCoord.pointer(2, gl.FLOAT, false, 16, 8);
-          gl.activeTexture(gl.TEXTURE0);
+          program.position.pointer(2, goog.webgl.FLOAT, false, 16, 0);
+          program.texCoord.pointer(2, goog.webgl.FLOAT, false, 16, 8);
+          gl.activeTexture(goog.webgl.TEXTURE0);
           program.textureUniform.set1i(0);
           program.alphaUniform.set1f(alpha);
-          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+          gl.drawArrays(goog.webgl.TRIANGLE_STRIP, 0, 4);
         }
       }
     }

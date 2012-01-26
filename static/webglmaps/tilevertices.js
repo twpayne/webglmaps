@@ -1,5 +1,6 @@
 goog.provide('webglmaps.TileVertices');
 
+goog.require('goog.webgl');
 goog.require('webglmaps.ArrayBuffer');
 
 
@@ -22,7 +23,7 @@ webglmaps.TileVertices = function(gl, tileCoord) {
     x / n, (y + 1) / n, 0, 0,
     (x + 1) / n, (y + 1) / n, 1, 0
   ];
-  this.data(new Float32Array(vertices), gl.STATIC_DRAW);
+  this.data(new Float32Array(vertices), goog.webgl.STATIC_DRAW);
 
 };
 goog.inherits(webglmaps.TileVertices, webglmaps.ArrayBuffer);
