@@ -66,7 +66,7 @@ webglmaps.tilequeue.Priority.prototype.getPriority = function(tile) {
   if (goog.isNull(this.camera_)) {
     return 0;
   }
-  var delta = goog.vec.Vec3.clone(tile.tileCoord.getCenter());
+  var delta = goog.vec.Vec3.cloneFloat32(tile.tileCoord.getCenter());
   goog.vec.Vec3.subtract(delta, this.camera_.getCenter(), delta);
   var magnitudeSquared = goog.vec.Vec3.magnitudeSquared(delta);
   if (tile.tileCoord.z == this.camera_.getTileZoom()) {

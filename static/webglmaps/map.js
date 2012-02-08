@@ -106,19 +106,19 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
    * @private
    * @type {goog.vec.Mat4.Type}
    */
-  this.positionToViewportMatrix_ = goog.vec.Mat4.create();
+  this.positionToViewportMatrix_ = goog.vec.Mat4.createFloat32();
 
   /**
    * @private
    * @type {goog.vec.Mat4.Type}
    */
-  this.viewportToPositionMatrix_ = goog.vec.Mat4.create();
+  this.viewportToPositionMatrix_ = goog.vec.Mat4.createFloat32();
 
   /**
    * @private
    * @type {goog.vec.Mat4.Type}
    */
-  this.elementPixelToPositionMatrix_ = goog.vec.Mat4.create();
+  this.elementPixelToPositionMatrix_ = goog.vec.Mat4.createFloat32();
 
   /**
    * @private
@@ -227,9 +227,9 @@ webglmaps.Map.prototype.disposeInternal = function() {
 
 
 /**
- * @param {goog.vec.Vec3.Vec3Like} pixel Pixel.
- * @param {goog.vec.Vec3.Vec3Like} position Positon.
- * @return {!goog.vec.Vec3.Vec3Like} Position.
+ * @param {goog.vec.Vec3.AnyType} pixel Pixel.
+ * @param {goog.vec.Vec3.AnyType} position Positon.
+ * @return {!goog.vec.Vec3.AnyType} Position.
  */
 webglmaps.Map.prototype.fromElementPixelToPosition = function(pixel, position) {
   return goog.vec.Mat4.multVec3(
@@ -332,7 +332,7 @@ webglmaps.Map.prototype.render_ = function() {
 
   var z = this.camera_.getTileZoom(), n = 1 << z;
   var xs = new Array(4), ys = new Array(4);
-  var i, position = goog.vec.Vec3.create();
+  var i, position = goog.vec.Vec3.createFloat32();
   for (i = 0; i < 4; ++i) {
     position[0] = 2 * (i >> 1) - 1;
     position[1] = 2 * (i & 1) - 1;

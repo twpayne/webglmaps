@@ -12,9 +12,9 @@ webglmaps.Camera = function() {
 
   /**
    * @private
-   * @type {goog.vec.Vec3.Type}
+   * @type {goog.vec.Vec3.Float32}
    */
-  this.center_ = goog.vec.Vec3.createFromValues(0.5, 0.5, 0);
+  this.center_ = goog.vec.Vec3.createFloat32FromValues(0.5, 0.5, 0);
 
   /**
    * @private
@@ -32,7 +32,7 @@ webglmaps.Camera = function() {
    * @private
    * @type {goog.vec.Mat4.Type}
    */
-  this.matrix_ = goog.vec.Mat4.create();
+  this.matrix_ = goog.vec.Mat4.createFloat32();
 
   /**
    * @private
@@ -50,15 +50,15 @@ webglmaps.Camera = function() {
 
 
 /**
- * @param {goog.vec.Vec3.Type=} opt_result Result.
- * @return {!goog.vec.Vec3.Type} Center.
+ * @param {goog.vec.Vec3.Float32=} opt_result Result.
+ * @return {!goog.vec.Vec3.Float32} Center.
  */
 webglmaps.Camera.prototype.getCenter = function(opt_result) {
   if (goog.isDefAndNotNull(opt_result)) {
     goog.vec.Vec3.setFromArray(opt_result, this.center_);
     return opt_result;
   } else {
-    return goog.vec.Vec3.clone(this.center_);
+    return goog.vec.Vec3.cloneFloat32(this.center_);
   }
 };
 
