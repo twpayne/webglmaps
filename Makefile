@@ -77,7 +77,7 @@ $(CLOSURE_LIBRARY):
 	if [ -e ../closure-library ]; then ln -s ../../closure-library $@ ; else svn checkout http://closure-library.googlecode.com/svn/trunk/ $@ ; fi
 
 $(CLOSURE_LINTER):
-	if [ -e ../closure-linter ]; then ln -s ../closure-linter $@ ; else svn checkout svn checkout http://closure-linter.googlecode.com/svn/trunk/ $@ ; fi
+	if [ -e ../closure-linter ]; then ln -s ../closure-linter $@ ; else svn checkout http://closure-linter.googlecode.com/svn/trunk/ $@ ; fi
 
 $(COMPILER_JAR):
 	mkdir -p $(dir $@)
