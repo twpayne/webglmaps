@@ -77,8 +77,8 @@ webglmaps.main = function(canvas) {
   var hsFragmentShader = new webglmaps.shader.fragment.HueSaturation();
   var fragmentShaders = [
     null,
-    new webglmaps.shader.fragment.Invert(),
     new webglmaps.shader.fragment.Grayscale(),
+    new webglmaps.shader.fragment.Invert(),
     hsFragmentShader,
     new webglmaps.shader.fragment.HexagonalPixelate(),
     new webglmaps.shader.fragment.ColorHalftone()
