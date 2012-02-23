@@ -34,7 +34,7 @@ goog.require('webglmaps.utils');
  * @const
  * @type {number}
  */
-webglmaps.TILE_FADE_IN_PERIOD = 100;
+webglmaps.TILE_FADE_IN_PERIOD = 1000;
 
 
 /**
