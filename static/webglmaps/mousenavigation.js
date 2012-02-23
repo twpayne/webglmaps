@@ -113,6 +113,8 @@ webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
   if (this.state_ == webglmaps.MouseNavigationState.NONE) {
     return;
   }
+  this.map_.fromElementPixelToPosition(
+      this.previousPixel_, this.previousPosition_);
   event.preventDefault();
   var pixel = goog.vec.Vec3.createFloat32FromValues(
       event.clientX, event.clientY, 0);
@@ -133,10 +135,7 @@ webglmaps.MouseNavigation.prototype.handleMouseMove = function(event) {
   if (camera.isDirty()) {
     this.map_.redraw();
   }
-  // FIXME subtle bug here: if the map is animating then matrices won't be
-  //       updated immediately
   goog.vec.Vec3.setFromArray(this.previousPixel_, pixel);
-  this.map_.fromElementPixelToPosition(pixel, this.previousPosition_);
 };
 
 
