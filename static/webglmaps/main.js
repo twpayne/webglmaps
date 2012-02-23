@@ -17,6 +17,7 @@ goog.require('webglmaps.shader.fragment.Grayscale');
 goog.require('webglmaps.shader.fragment.HexagonalPixelate');
 goog.require('webglmaps.shader.fragment.HueSaturation');
 goog.require('webglmaps.shader.fragment.Invert');
+goog.require('webglmaps.shader.vertex.Stretch');
 goog.require('webglmaps.shader.vertex.Wobble');
 
 
@@ -84,6 +85,7 @@ webglmaps.main = function(canvas) {
   ];
   var vertexShaders = [
     null,
+    new webglmaps.shader.vertex.Stretch(),
     new webglmaps.shader.vertex.Wobble()
   ];
   goog.events.listen(
