@@ -24,5 +24,5 @@ goog.inherits(webglmaps.shader.Vertex, webglmaps.Shader);
 webglmaps.shader.Vertex.prototype.create = function() {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
-  return gl.createShader(gl.VERTEX_SHADER);
+  return gl.createShader(goog.webgl.VERTEX_SHADER);
 };

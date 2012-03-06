@@ -24,5 +24,5 @@ goog.inherits(webglmaps.shader.Fragment, webglmaps.Shader);
 webglmaps.shader.Fragment.prototype.create = function() {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
-  return gl.createShader(gl.FRAGMENT_SHADER);
+  return gl.createShader(goog.webgl.FRAGMENT_SHADER);
 };
