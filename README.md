@@ -2,7 +2,7 @@ WebGL Maps
 ==========
 
 Version 0.1
-Copyright &copy; Tom Payne, 2011
+Copyright &copy; Tom Payne, 2012
 
 
 Quick Start
