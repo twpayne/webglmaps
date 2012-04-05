@@ -8,6 +8,30 @@ Copyright &copy; Tom Payne, 2012
 Quick Start
 -----------
 
+For a live demo, go to <http://dev.camptocamp.com/files/tpayne/webglmaps.html>.
+
+The following controls are available:
+
+* Mouse drag: pan.
+
+* Mouse wheel: zoom in/out.
+
+* Shift+mouse drag mouse: rotate.
+
+* `u`: flip map upside down.
+
+* `r`: reset rotation.
+
+* `i`: toggle interim tiles on or off.
+
+* `f`: cycle fragment shader (image processing effects).  Available effects are: none, grayscale, invert, hue/saturation, hexagonalize, pop art.  While on the hue/saturation effect you can use `h`/`H` to decrease/increase hue, `s`/`S` to decrease/increase saturation, and `0` to reset the hue and saturation to their default values.
+
+* `v`: cycle vertex shader (transformation effects).  Available effects are: none, simple stretch, and wobble.
+
+
+Introduction
+------------
+
 WebGL Maps is a weekend proof-of-concept project for learning WebGL and demonstrating WebGL's application to web mapping.
 
 To get started:
