@@ -47,10 +47,10 @@ webglmaps.main = function(canvas) {
   var tileLayer, tileLayer2 = null, tileUrl;
   if (webglmaps.USE_LOCAL_TILESERVER) {
     tileUrl = webglmaps.tileurl.fromTemplate(
-        'http://localhost:8000/data/image/0/tiles/{z}/{x}/{y}');
+        'http://localhost:8080/tiles/0/tiles/{z}/{x}/{y}');
     tileLayer = new webglmaps.TileLayer(tileUrl);
     var tileUrl2 = webglmaps.tileurl.fromTemplate(
-        'http://localhost:8000/data/image/1/tiles/{z}/{x}/{y}');
+        'http://localhost:8080/tiles/1/tiles/{z}/{x}/{y}');
     tileLayer2 = new webglmaps.TileLayer(tileUrl2, {
       visible: false
     });
