@@ -43,6 +43,25 @@ webglmaps.projection.SphericalMercatorImpl.prototype.fromWgs84 =
 
 
 /**
+ * @inheritDoc
+ */
+webglmaps.projection.SphericalMercatorImpl.prototype.toWgs84 =
+    function(coordinates) {
+  var originShift = webglmaps.projection.SphericalMercatorImpl.ORIGIN_SHIFT;
+  var mx = coordinates[0];
+  var my = coordinates[1];
+  // FIXME remove hacky from-world transformation that follows
+  mx = 2 * originShift * mx - originShift;
+  my = 2 * originShift * my - originShift;
+  var lon = (mx / originShift) * 180;
+  var lat = (my / originShift) * 180;
+  lat = 180 / Math.PI *
+      (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+  return [lon, lat];
+};
+
+
+/**
  * @const
  * @type {webglmaps.projection.SphericalMercatorImpl}
  */
