@@ -15,6 +15,7 @@ goog.require('goog.vec.Mat4');
 goog.require('goog.vec.Vec3');
 goog.require('goog.webgl');
 goog.require('webglmaps.Camera');
+goog.require('webglmaps.PointLayer');
 goog.require('webglmaps.Program');
 goog.require('webglmaps.ProgramCache');
 goog.require('webglmaps.TileCoord');
@@ -128,6 +129,18 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   /**
    * @private
+   * @type {Array.<webglmaps.PointLayer>}
+   */
+  this.pointLayers_ = [];
+
+  /**
+   * @private
+   * @type {Array.<number>}
+   */
+  this.lastBBox_ = [0, 0, 0, 0];
+
+  /**
+   * @private
    * @type {Object.<number, ?number>}
    */
   this.layerChangeListeners_ = {};
@@ -191,6 +204,17 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
 };
 goog.inherits(webglmaps.Map, goog.events.EventTarget);
+
+
+/**
+ * @param {webglmaps.PointLayer} pointLayer Point layer.
+ */
+webglmaps.Map.prototype.addPointLayer = function(pointLayer) {
+  pointLayer.setGL(this.gl_);
+  this.pointLayers_.push(pointLayer);
+  this.layerChangeListeners_[goog.getUid(pointLayer)] = goog.events.listen(
+      pointLayer, goog.events.EventType.CHANGE, this.redraw, false, this);
+};
 
 
 /**
@@ -352,6 +376,13 @@ webglmaps.Map.prototype.render_ = function() {
     }
   }, this);
 
+  goog.array.forEach(this.pointLayers_, function(pointLayer) {
+    if (pointLayer.getVisible() &&
+        this.renderPointLayer_(pointLayer, z, x0, y0, x1, y1)) {
+      animate = true;
+    }
+  }, this);
+
   if (animate) {
     this.animating_ = true;
     window.myRequestAnimationFrame(
@@ -360,6 +391,77 @@ webglmaps.Map.prototype.render_ = function() {
 
   this.tileQueue_.update();
 
+};
+
+
+/**
+ * @param {webglmaps.PointLayer} pointLayer Point layer.
+ * @param {number} z Z.
+ * @param {number} x0 X0.
+ * @param {number} y0 Y0.
+ * @param {number} x1 X1.
+ * @param {number} y1 Y1.
+ * @return {boolean} Animate?
+ * @private
+ */
+webglmaps.Map.prototype.renderPointLayer_ =
+    function(pointLayer, z, x0, y0, x1, y1) {
+  if (z < 12) {
+    return false;
+  }
+  if (!goog.array.equals(this.lastBBox_, [x0, y0, x1, y1])) {
+    var xs = [(x0 - 1) / (1 << z), (x1 + 2) / (1 << z)];
+    var ys = [1 - (y0 - 1) / (1 << z), 1 - (y1 + 2) / (1 << z)];
+    var i, j;
+    var lons = [], lats = [];
+    for (i = 0; i < 2; ++i) {
+      for (j = 0; j < 2; ++j) {
+        var lonLat =
+            webglmaps.projection.SphericalMercator.toWgs84([xs[i], ys[i]]);
+        lons.push(lonLat[0]);
+        lats.push(lonLat[1]);
+      }
+    }
+    var lon0 = goog.math.clamp(Math.min.apply(null, lons), -180, 180);
+    var lat0 = goog.math.clamp(Math.min.apply(null, lats), -90, 90);
+    var lon1 = goog.math.clamp(Math.max.apply(null, lons), -180, 180);
+    var lat1 = goog.math.clamp(Math.max.apply(null, lats), -90, 90);
+    var bbox = [lon0, lat0, lon1, lat1];
+    var zoomOffset =
+        goog.isDef(window['zoomOffset']) ? window['zoomOffset'] : 6;
+    pointLayer.request(z - zoomOffset, bbox);
+    this.lastBBox_ = [x0, y0, x1, y1];
+  }
+  var features = pointLayer.getFeatures();
+  if (features.length === 0) {
+    return false;
+  }
+  var gl = this.gl_;
+  var animate = false;
+  var fragmentShader = pointLayer.getFragmentShader() ||
+      this.defaultFragmentShader_;
+  animate = animate || fragmentShader.isAnimated();
+  var vertexShader = pointLayer.getVertexShader() ||
+      this.defaultVertexShader_;
+  animate = animate || vertexShader.isAnimated();
+  var program = this.programCache_.get(fragmentShader, vertexShader);
+  if (program !== this.program_) {
+    if (program.getGL() !== gl) {
+      program.setGL(gl);
+    }
+    program.use();
+    this.program_ = program;
+  }
+  program.mvpMatrixUniform.setMatrix4fv(false, this.positionToViewportMatrix_);
+  program.timeUniform.set1f(this.time_ - this.firstUsedTime_);
+  program.alphaUniform.set1f(1);
+  fragmentShader.setUniforms();
+  vertexShader.setUniforms();
+  pointLayer.bind();
+  program.position.pointer(2, goog.webgl.FLOAT, false, 0, 0);
+  program.texCoord.pointer(2, goog.webgl.FLOAT, false, 0, 0); // FIXME
+  gl.drawArrays(goog.webgl.POINTS, 0, features.length);
+  return false;
 };
 
 

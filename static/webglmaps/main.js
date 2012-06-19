@@ -10,6 +10,7 @@ goog.require('goog.events.KeyHandler.EventType');
 goog.require('goog.math');
 goog.require('webglmaps.Map');
 goog.require('webglmaps.MouseNavigation');
+goog.require('webglmaps.PointLayer');
 goog.require('webglmaps.TileLayer');
 goog.require('webglmaps.TileUrl');
 goog.require('webglmaps.shader.fragment.BrightnessContrast');
@@ -18,6 +19,7 @@ goog.require('webglmaps.shader.fragment.Grayscale');
 goog.require('webglmaps.shader.fragment.HexagonalPixelate');
 goog.require('webglmaps.shader.fragment.HueSaturation');
 goog.require('webglmaps.shader.fragment.Invert');
+goog.require('webglmaps.shader.fragment.Monochrome');
 goog.require('webglmaps.shader.vertex.Stretch');
 goog.require('webglmaps.shader.vertex.Wobble');
 
@@ -39,11 +41,16 @@ webglmaps.USE_LOCAL_TILESERVER = false;
  */
 webglmaps.main = function(canvas) {
 
+  window['zoomOffset'] = 6;
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   var bgColor = goog.color.hexToRgb('#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
+  var camera = map.getCamera();
+  camera.setCenter([0.520, 0.648]);
+  camera.setZoom(12);
 
   var tileLayer, tileLayer2 = null, tileUrl;
   if (webglmaps.USE_LOCAL_TILESERVER) {
@@ -72,14 +79,21 @@ webglmaps.main = function(canvas) {
   if (!goog.isNull(tileLayer2)) {
     map.addTileLayer(tileLayer2);
   }
+  var pointLayer = new webglmaps.PointLayer(
+      'http://mf-chsdi0t.bgdi.admin.ch/vector/vtile/view_adr');
+  pointLayer.setFragmentShader(new webglmaps.shader.fragment.Monochrome());
+  map.addPointLayer(pointLayer);
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);
 
   var bcFragmentShader = new webglmaps.shader.fragment.BrightnessContrast();
+  bcFragmentShader.setBrightness(-0.75);
+  bcFragmentShader.setContrast(-0.75);
+  tileLayer.setFragmentShader(bcFragmentShader);
   var hsFragmentShader = new webglmaps.shader.fragment.HueSaturation();
   var fragmentShaders = [
-    null,
     bcFragmentShader,
+    null,
     new webglmaps.shader.fragment.Grayscale(),
     new webglmaps.shader.fragment.Invert(),
     hsFragmentShader,
@@ -88,8 +102,8 @@ webglmaps.main = function(canvas) {
   ];
   var vertexShaders = [
     null,
-    new webglmaps.shader.vertex.Stretch(),
-    new webglmaps.shader.vertex.Wobble()
+    new webglmaps.shader.vertex.Stretch()
+    //new webglmaps.shader.vertex.Wobble()
   ];
   goog.events.listen(
       new goog.events.KeyHandler(document),
@@ -182,6 +196,7 @@ webglmaps.main = function(canvas) {
           index = goog.math.modulo(index + 1, vertexShaders.length);
           vertexShader = vertexShaders[index];
           tileLayer.setVertexShader(vertexShader);
+          pointLayer.setVertexShader(vertexShader);
         }
       });
 
