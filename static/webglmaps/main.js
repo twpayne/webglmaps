@@ -12,6 +12,7 @@ goog.require('webglmaps.Map');
 goog.require('webglmaps.MouseNavigation');
 goog.require('webglmaps.TileLayer');
 goog.require('webglmaps.TileUrl');
+goog.require('webglmaps.shader.fragment.BrightnessContrast');
 goog.require('webglmaps.shader.fragment.ColorHalftone');
 goog.require('webglmaps.shader.fragment.Grayscale');
 goog.require('webglmaps.shader.fragment.HexagonalPixelate');
@@ -74,9 +75,11 @@ webglmaps.main = function(canvas) {
   var mouseNavigation = new webglmaps.MouseNavigation();
   mouseNavigation.setMap(map);
 
+  var bcFragmentShader = new webglmaps.shader.fragment.BrightnessContrast();
   var hsFragmentShader = new webglmaps.shader.fragment.HueSaturation();
   var fragmentShaders = [
     null,
+    bcFragmentShader,
     new webglmaps.shader.fragment.Grayscale(),
     new webglmaps.shader.fragment.Invert(),
     hsFragmentShader,
@@ -102,6 +105,18 @@ webglmaps.main = function(canvas) {
             hsFragmentShader.setSaturation(0);
             map.redraw();
           }
+        } else if (event.charCode == 'B'.charCodeAt(0)) {
+          if (tileLayer.getFragmentShader() == bcFragmentShader) {
+            bcFragmentShader.setBrightness(goog.math.clamp(
+                bcFragmentShader.getBrightness() + 0.05, -1, 1));
+            map.redraw();
+          }
+        } else if (event.charCode == 'C'.charCodeAt(0)) {
+          if (tileLayer.getFragmentShader() == bcFragmentShader) {
+            bcFragmentShader.setContrast(goog.math.clamp(
+                bcFragmentShader.getContrast() + 0.05, -1, 1));
+            map.redraw();
+          }
         } else if (event.charCode == 'H'.charCodeAt(0)) {
           if (tileLayer.getFragmentShader() == hsFragmentShader) {
             hsFragmentShader.setHue(hsFragmentShader.getHue() + 0.05);
@@ -111,6 +126,18 @@ webglmaps.main = function(canvas) {
           if (tileLayer.getFragmentShader() == hsFragmentShader) {
             hsFragmentShader.setSaturation(goog.math.clamp(
                 hsFragmentShader.getSaturation() + 0.05, -1, 1));
+            map.redraw();
+          }
+        } else if (event.charCode == 'b'.charCodeAt(0)) {
+          if (tileLayer.getFragmentShader() == bcFragmentShader) {
+            bcFragmentShader.setBrightness(goog.math.clamp(
+                bcFragmentShader.getBrightness() - 0.05, -1, 1));
+            map.redraw();
+          }
+        } else if (event.charCode == 'c'.charCodeAt(0)) {
+          if (tileLayer.getFragmentShader() == bcFragmentShader) {
+            bcFragmentShader.setContrast(goog.math.clamp(
+                bcFragmentShader.getContrast() - 0.05, -1, 1));
             map.redraw();
           }
         } else if (event.charCode == 'f'.charCodeAt(0)) {
