@@ -22,6 +22,7 @@ views/webglmaps/css.tpl: static/webglmaps/webglmaps.css
 
 views/webglmaps/js.tpl: \
 	$(filter-out $(TARGETS),$(shell find static/webglmaps -name \*.js)) \
+	externs/geojson.js \
 	externs/webgl_extra.js \
 	$(CLOSURE_LIBRARY) \
 	$(COMPILER_JAR)
@@ -29,6 +30,7 @@ views/webglmaps/js.tpl: \
 		--compiler_flags=--compilation_level=ADVANCED_OPTIMIZATIONS \
 		--compiler_flags=--define=goog.DEBUG=false \
 		--compiler_flags=--define=goog.dom.ASSUME_STANDARDS_MODE=true \
+		--compiler_flags=--externs=externs/geojson.js \
 		--compiler_flags=--externs=externs/webgl_extra.js \
 		--compiler_flags=--warning_level=VERBOSE \
 		--compiler_jar=$(COMPILER_JAR) \
