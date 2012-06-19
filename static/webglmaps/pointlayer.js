@@ -62,9 +62,7 @@ webglmaps.PointLayer = function(url) {
    * @private
    * @type {goog.net.XhrIo}
    */
-  this.xhrio_ = new goog.net.XhrIo();
-  goog.events.listen(this.xhrio_, goog.net.EventType.COMPLETE,
-      this.onComplete_, false, this);
+  this.xhrio_ = null;
 
   /**
    * @private
@@ -158,16 +156,13 @@ webglmaps.PointLayer.prototype.onComplete_ = function() {
     if (goog.isDefAndNotNull(responseJson)) {
       this.features_ = webglmaps.geojson.getPointFeatures(
           (/** @type {GeoJSONFeatureCollection} */ responseJson));
-      //this.features_ = [new webglmaps.feature.Point([0, 0], {})];
       if (!goog.isNull(this.arrayBuffer_)) {
         goog.dispose(this.arrayBuffer_);
         this.arrayBuffer_ = null;
       }
     }
-  } else {
-    this.features_ = [];
+    this.dispatchChangeEvent();
   }
-  this.dispatchChangeEvent();
 };
 
 
@@ -176,8 +171,16 @@ webglmaps.PointLayer.prototype.onComplete_ = function() {
  * @param {Array.<number>} bbox Bounding box.
  */
 webglmaps.PointLayer.prototype.request = function(zoom, bbox) {
-  if (this.xhrio_.isActive()) {
+  if (!goog.isNull(this.xhrio_) && this.xhrio_.isActive()) {
     this.xhrio_.abort();
+    if (this.xhrio_.isActive()) { // FIXME why does this happen?
+      this.xhrio_ = null;
+    }
+  }
+  if (goog.isNull(this.xhrio_)) {
+    this.xhrio_ = new goog.net.XhrIo();
+    goog.events.listen(this.xhrio_, goog.net.EventType.COMPLETE,
+        this.onComplete_, false, this);
   }
   var queryData = new goog.Uri.QueryData();
   queryData.set('zoom', zoom);
