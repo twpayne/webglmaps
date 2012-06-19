@@ -80,6 +80,18 @@ webglmaps.Uniform.prototype.set1i = function(value) {
 
 
 /**
+ * @param {Array.<number>} value Value.
+ */
+webglmaps.Uniform.prototype.set3fv = function(value) {
+  var gl = this.gl_;
+  goog.asserts.assert(!goog.isNull(gl));
+  if (!goog.isNull(this.location_)) {
+    gl.uniform3fv(this.location_, value);
+  }
+};
+
+
+/**
  * @param {boolean} transpose Transpose.
  * @param {goog.vec.Mat4.Mat4Like} value Value.
  */
