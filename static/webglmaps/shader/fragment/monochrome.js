@@ -35,7 +35,7 @@ webglmaps.shader.fragment.Monochrome = function(opt_color) {
    * @private
    * @type {Array.<number>}
    */
-  this.color_ = opt_color || [1, 0, 0];
+  this.color_ = opt_color || [1, 1, 0];
 
 };
 goog.inherits(webglmaps.shader.fragment.Monochrome, webglmaps.shader.Fragment);
