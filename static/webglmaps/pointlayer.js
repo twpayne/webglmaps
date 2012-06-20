@@ -89,8 +89,20 @@ webglmaps.PointLayer.prototype.bind = function() {
     this.arrayBuffer_ = new webglmaps.ArrayBuffer(gl);
     var verticies = [];
     goog.array.forEach(this.features_, function(feature) {
-      verticies.push(feature.coordinates[0]);
-      verticies.push(feature.coordinates[1]);
+      var size = 0.0000001;
+      verticies.push(
+          feature.coordinates[0] - size,
+          feature.coordinates[1] - size,
+          feature.coordinates[0] + size,
+          feature.coordinates[1] - size,
+          feature.coordinates[0] - size,
+          feature.coordinates[1] + size,
+          feature.coordinates[0] - size,
+          feature.coordinates[1] + size,
+          feature.coordinates[0] + size,
+          feature.coordinates[1] - size,
+          feature.coordinates[0] + size,
+          feature.coordinates[1] + size);
     });
     this.arrayBuffer_.data(new Float32Array(verticies), goog.webgl.STATIC_DRAW);
   } else {
@@ -156,6 +168,7 @@ webglmaps.PointLayer.prototype.onComplete_ = function() {
     if (goog.isDefAndNotNull(responseJson)) {
       this.features_ = webglmaps.geojson.getPointFeatures(
           (/** @type {GeoJSONFeatureCollection} */ responseJson));
+      window.console.log('loaded ' + this.features_.length + ' points');
       if (!goog.isNull(this.arrayBuffer_)) {
         goog.dispose(this.arrayBuffer_);
         this.arrayBuffer_ = null;
@@ -187,6 +200,7 @@ webglmaps.PointLayer.prototype.request = function(zoom, bbox) {
   queryData.set('bbox', bbox.join(','));
   this.uri_.setQueryData(queryData);
   this.xhrio_.send(this.uri_.toString());
+  window.console.log(this.uri_.toString());
 };
 
 

@@ -460,7 +460,7 @@ webglmaps.Map.prototype.renderPointLayer_ =
   pointLayer.bind();
   program.position.pointer(2, goog.webgl.FLOAT, false, 0, 0);
   program.texCoord.pointer(2, goog.webgl.FLOAT, false, 0, 0); // FIXME
-  gl.drawArrays(goog.webgl.POINTS, 0, features.length);
+  gl.drawArrays(goog.webgl.TRIANGLES, 0, 6 * features.length);
   return false;
 };
 
