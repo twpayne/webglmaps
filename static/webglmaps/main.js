@@ -8,6 +8,8 @@ goog.require('goog.events.KeyEvent');
 goog.require('goog.events.KeyHandler');
 goog.require('goog.events.KeyHandler.EventType');
 goog.require('goog.math');
+goog.require('goog.object');
+goog.require('goog.ui.Tooltip');
 goog.require('webglmaps.Map');
 goog.require('webglmaps.MouseNavigation');
 goog.require('webglmaps.PointLayer');
@@ -103,8 +105,8 @@ webglmaps.main = function(canvas) {
     new webglmaps.shader.fragment.ColorHalftone()
   ];
   var vertexShaders = [
-    null,
-    new webglmaps.shader.vertex.Stretch()
+    null
+    //new webglmaps.shader.vertex.Stretch()
     //new webglmaps.shader.vertex.Wobble()
   ];
   goog.events.listen(
@@ -199,6 +201,45 @@ webglmaps.main = function(canvas) {
           vertexShader = vertexShaders[index];
           tileLayer.setVertexShader(vertexShader);
           pointLayer.setVertexShader(vertexShader);
+        }
+      });
+
+  var lastFeature = null;
+  var tooltip = new goog.ui.Tooltip(canvas);
+  tooltip.setShowDelayMs(0);
+  goog.events.listen(
+      map.getElement(),
+      goog.events.EventType.MOUSEMOVE,
+      /**
+       * @type {goog.events.BrowserEvent}
+       */
+      function(event) {
+        var pickData = map.getPickData(event.offsetX, event.offsetY);
+        var feature;
+        if (pickData[0] != 255 && pickData[1] != 255 && pickData[2] != 255) {
+          var index = (pickData[0] << 16) + (pickData[1] << 8) + pickData[2];
+          feature = pointLayer.getFeatures()[index];
+        } else {
+          feature = null;
+        }
+        if (feature != lastFeature) {
+          if (goog.isNull(feature)) {
+            tooltip.handleMouseOutAndBlur(event);
+          } else {
+            var p = feature.properties;
+            var street = goog.object.get(p, 'street', '');
+            var no = goog.object.get(p, 'no', '');
+            var city = goog.object.get(p, 'city', '');
+            var canton = goog.object.get(p, 'canton', '');
+            var html = street;
+            if (!goog.isNull(no)) {
+              html = html + ' ' + no;
+            }
+            html += ', ' + city + ', ' + canton;
+            tooltip.setHtml(html);
+            tooltip.handleFocus(event);
+          }
+          lastFeature = feature;
         }
       });
 

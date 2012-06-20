@@ -25,7 +25,9 @@ goog.require('webglmaps.TileVertices');
 goog.require('webglmaps.shader.Fragment');
 goog.require('webglmaps.shader.Vertex');
 goog.require('webglmaps.shader.fragment.Default');
+goog.require('webglmaps.shader.fragment.Picking');
 goog.require('webglmaps.shader.vertex.Default');
+goog.require('webglmaps.shader.vertex.Picking');
 goog.require('webglmaps.tilequeue.Priority');
 goog.require('webglmaps.transitions');
 goog.require('webglmaps.utils');
@@ -161,11 +163,47 @@ webglmaps.Map = function(canvas, opt_tileSize, opt_bgColor) {
 
   var gl = this.gl_;
 
-  var clearColor = opt_bgColor || [0, 0, 0];
-  gl.clearColor(clearColor[0], clearColor[1], clearColor[2], 1);
+  /**
+   * @private
+   * @type {Array.<number>}
+   */
+  this.clearColor_ = goog.isDef(opt_bgColor) ? opt_bgColor : [0, 0, 0];
+
+  gl.clearColor(
+      this.clearColor_[0], this.clearColor_[1], this.clearColor_[2], 1);
   gl.disable(goog.webgl.DEPTH_TEST);
   gl.disable(goog.webgl.SCISSOR_TEST);
   gl.disable(goog.webgl.CULL_FACE);
+
+  /**
+   * @private
+   * @type {WebGLTexture}
+   */
+  this.pickTexture_ = null;
+
+  /**
+   * @private
+   * @type {WebGLFramebuffer}
+   */
+  this.pickFramebuffer_ = null;
+
+  /**
+   * @private
+   * @type {webglmaps.shader.fragment.Picking}
+   */
+  this.pickFragmentShader_ = new webglmaps.shader.fragment.Picking();
+
+  /**
+   * @private
+   * @type {webglmaps.shader.vertex.Picking}
+   */
+  this.pickVertexShader_ = new webglmaps.shader.vertex.Picking();
+
+  /**
+   * @private
+   * @type {webglmaps.VertexAttrib}
+   */
+  this.pickingColor_ = new webglmaps.VertexAttrib('aPickingColor');
 
   /**
    * @private
@@ -352,6 +390,8 @@ webglmaps.Map.prototype.render_ = function() {
     this.camera_.setDirty(false);
   }
 
+  gl.clearColor(
+      this.clearColor_[0], this.clearColor_[1], this.clearColor_[2], 1);
   gl.clear(goog.webgl.COLOR_BUFFER_BIT);
 
   var z = this.camera_.getTileZoom(), n = 1 << z;
@@ -437,6 +477,7 @@ webglmaps.Map.prototype.renderPointLayer_ =
     return false;
   }
   var gl = this.gl_;
+  gl.disable(goog.webgl.BLEND);
   var animate = false;
   var fragmentShader = pointLayer.getFragmentShader() ||
       this.defaultFragmentShader_;
@@ -458,10 +499,54 @@ webglmaps.Map.prototype.renderPointLayer_ =
   fragmentShader.setUniforms();
   vertexShader.setUniforms();
   pointLayer.bind();
-  program.position.pointer(2, goog.webgl.FLOAT, false, 0, 0);
-  program.texCoord.pointer(2, goog.webgl.FLOAT, false, 0, 0); // FIXME
+  program.position.pointer(2, goog.webgl.FLOAT, false, 24, 0);
+  program.texCoord.pointer(2, goog.webgl.FLOAT, false, 24, 8); // FIXME
   gl.drawArrays(goog.webgl.TRIANGLES, 0, 6 * features.length);
+
+  program = this.programCache_.get(
+      this.pickFragmentShader_, this.pickVertexShader_);
+  if (program !== this.program_) {
+    if (program.getGL() !== gl) {
+      program.setGL(gl);
+    }
+    gl.useProgram(program.getProgram());
+    program.position.enableArray();
+    this.pickingColor_.setGL(gl);
+    this.pickingColor_.setProgram(program.getProgram());
+    this.pickingColor_.enableArray();
+    this.program_ = program;
+  }
+  program.mvpMatrixUniform.setMatrix4fv(false, this.positionToViewportMatrix_);
+  this.pickFragmentShader_.setUniforms();
+  this.pickVertexShader_.setUniforms();
+  pointLayer.bind();
+  program.position.pointer(2, goog.webgl.FLOAT, false, 24, 0);
+  this.pickingColor_.pointer(4, goog.webgl.FLOAT, false, 24, 8);
+  gl.bindFramebuffer(goog.webgl.FRAMEBUFFER, this.pickFramebuffer_);
+  gl.clearColor(1, 1, 1, 1);
+  gl.clear(goog.webgl.COLOR_BUFFER_BIT);
+  gl.drawArrays(goog.webgl.TRIANGLES, 0, 6 * features.length);
+  var width = this.gl_.canvas.width;
+  var height = this.gl_.canvas.height;
+  gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, this.pickData_);
+  gl.bindFramebuffer(goog.webgl.FRAMEBUFFER, null);
+  gl.enable(goog.webgl.BLEND);
+
   return false;
+
+};
+
+
+/**
+ * @param {number} x X.
+ * @param {number} y Y.
+ * @return {Array.<number>} Pick data.
+ */
+webglmaps.Map.prototype.getPickData = function(x, y) {
+  var width = this.gl_.canvas.width;
+  var height = this.gl_.canvas.height;
+  var offset = 4 * ((height - y - 1) * width + x);
+  return goog.array.slice(this.pickData_, offset, offset + 4);
 };
 
 
@@ -647,11 +732,40 @@ webglmaps.Map.prototype.setCamera = function(camera) {
  * @private
  */
 webglmaps.Map.prototype.setSize_ = function(size) {
-  if (!goog.isNull(this.gl_)) {
-    this.gl_.canvas.width = size.width;
-    this.gl_.canvas.height = size.height;
-    this.gl_.viewport(0, 0, size.width, size.height);
+  var gl = this.gl_;
+  if (!goog.isNull(gl)) {
+    gl.canvas.width = size.width;
+    gl.canvas.height = size.height;
+    gl.viewport(0, 0, size.width, size.height);
     this.updateMatrices_();
+    if (!goog.isNull(this.pickFramebuffer_)) {
+      gl.deleteFramebuffer(this.pickFramebuffer_);
+      this.pickFramebuffer_ = null;
+    }
+    if (!goog.isNull(this.pickTexture_)) {
+      gl.deleteTexture(this.pickTexture_);
+      this.pickTexture_ = null;
+    }
+    this.pickTexture_ = gl.createTexture();
+    gl.bindTexture(goog.webgl.TEXTURE_2D, this.pickTexture_);
+    gl.texImage2D(goog.webgl.TEXTURE_2D, 0, gl.RGBA, size.width, size.height,
+        0, goog.webgl.RGBA, goog.webgl.UNSIGNED_BYTE, null);
+    gl.texParameteri(goog.webgl.TEXTURE_2D, goog.webgl.TEXTURE_MAG_FILTER,
+        goog.webgl.NEAREST);
+    gl.texParameteri(goog.webgl.TEXTURE_2D, goog.webgl.TEXTURE_MIN_FILTER,
+        goog.webgl.NEAREST);
+    gl.texParameteri(goog.webgl.TEXTURE_2D, goog.webgl.TEXTURE_WRAP_S,
+        goog.webgl.CLAMP_TO_EDGE);
+    gl.texParameteri(goog.webgl.TEXTURE_2D, goog.webgl.TEXTURE_WRAP_T,
+        goog.webgl.CLAMP_TO_EDGE);
+    this.pickFramebuffer_ = gl.createFramebuffer();
+    gl.bindFramebuffer(goog.webgl.FRAMEBUFFER, this.pickFramebuffer_);
+    gl.framebufferTexture2D(goog.webgl.FRAMEBUFFER,
+        goog.webgl.COLOR_ATTACHMENT0, goog.webgl.TEXTURE_2D, this.pickTexture_,
+        0);
+    gl.bindTexture(goog.webgl.TEXTURE_2D, null);
+    gl.bindFramebuffer(goog.webgl.FRAMEBUFFER, null);
+    this.pickData_ = new Uint8Array(4 * size.width * size.height);
     this.redraw();
   }
 };

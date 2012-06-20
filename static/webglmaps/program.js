@@ -95,6 +95,14 @@ webglmaps.Program.prototype.getGL = function() {
 
 
 /**
+ * @return {WebGLProgram} Program.
+ */
+webglmaps.Program.prototype.getProgram = function() {
+  return this.program_;
+};
+
+
+/**
  * @param {WebGLRenderingContext} gl GL.
  */
 webglmaps.Program.prototype.setGL = function(gl) {

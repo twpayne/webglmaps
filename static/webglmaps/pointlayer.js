@@ -88,21 +88,31 @@ webglmaps.PointLayer.prototype.bind = function() {
   if (goog.isNull(this.arrayBuffer_)) {
     this.arrayBuffer_ = new webglmaps.ArrayBuffer(gl);
     var verticies = [];
-    goog.array.forEach(this.features_, function(feature) {
+    goog.array.forEach(this.features_, function(feature, i) {
       var size = 0.0000001;
+      var red = ((i >> 16) & 255) / 255;
+      var green = ((i >> 8) & 255) / 255;
+      var blue = (i & 255) / 255;
+      var alpha = 1;
       verticies.push(
           feature.coordinates[0] - size,
           feature.coordinates[1] - size,
+          red, green, blue, alpha,
           feature.coordinates[0] + size,
           feature.coordinates[1] - size,
+          red, green, blue, alpha,
           feature.coordinates[0] - size,
           feature.coordinates[1] + size,
+          red, green, blue, alpha,
           feature.coordinates[0] - size,
           feature.coordinates[1] + size,
+          red, green, blue, alpha,
           feature.coordinates[0] + size,
           feature.coordinates[1] - size,
+          red, green, blue, alpha,
           feature.coordinates[0] + size,
-          feature.coordinates[1] + size);
+          feature.coordinates[1] + size,
+          red, green, blue, alpha);
     });
     this.arrayBuffer_.data(new Float32Array(verticies), goog.webgl.STATIC_DRAW);
   } else {

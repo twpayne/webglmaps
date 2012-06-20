@@ -36,7 +36,8 @@ webglmaps.VertexAttrib = function(name) {
 webglmaps.VertexAttrib.prototype.enableArray = function() {
   var gl = this.gl_;
   goog.asserts.assert(!goog.isNull(gl));
-  goog.asserts.assert(this.location_ != -1);
+  // FIXME disable assert while there are multiple simultaneous shaders
+  //goog.asserts.assert(this.location_ != -1);
   gl.enableVertexAttribArray(this.location_);
 };
 
