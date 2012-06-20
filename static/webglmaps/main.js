@@ -13,6 +13,7 @@ goog.require('webglmaps.MouseNavigation');
 goog.require('webglmaps.PointLayer');
 goog.require('webglmaps.TileLayer');
 goog.require('webglmaps.TileUrl');
+goog.require('webglmaps.projection.SphericalMercator');
 goog.require('webglmaps.shader.fragment.BrightnessContrast');
 goog.require('webglmaps.shader.fragment.ColorHalftone');
 goog.require('webglmaps.shader.fragment.Grayscale');
@@ -49,8 +50,9 @@ webglmaps.main = function(canvas) {
   var bgColor = goog.color.hexToRgb('#fff');
   var map = new webglmaps.Map(canvas, 256, bgColor);
   var camera = map.getCamera();
-  camera.setCenter([0.520, 0.648]);
-  camera.setZoom(12);
+  camera.setCenter(
+      webglmaps.projection.SphericalMercator.fromWgs84([6.93137, 46.81718]));
+  camera.setZoom(17);
 
   var tileLayer, tileLayer2 = null, tileUrl;
   if (webglmaps.USE_LOCAL_TILESERVER) {
