@@ -76,7 +76,11 @@ webglmaps.main = function(canvas) {
   mouseNavigation.setMap(map);
 
   var bcFragmentShader = new webglmaps.shader.fragment.BrightnessContrast();
+  bcFragmentShader.setBrightness(-0.25);
+  bcFragmentShader.setContrast(0.25);
   var hsFragmentShader = new webglmaps.shader.fragment.HueSaturation();
+  hsFragmentShader.setHue(-0.5);
+  hsFragmentShader.setSaturation(0.5);
   var fragmentShaders = [
     null,
     bcFragmentShader,
