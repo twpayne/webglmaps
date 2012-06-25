@@ -100,7 +100,11 @@ webglmaps.main = function(canvas) {
       function(event) {
         var camera, index;
         if (event.charCode == '0'.charCodeAt(0)) {
-          if (tileLayer.getFragmentShader() == hsFragmentShader) {
+          if (tileLayer.getFragmentShader() == bcFragmentShader) {
+            bcFragmentShader.setBrightness(0);
+            bcFragmentShader.setContrast(0);
+            map.redraw();
+          } else if (tileLayer.getFragmentShader() == hsFragmentShader) {
             hsFragmentShader.setHue(0);
             hsFragmentShader.setSaturation(0);
             map.redraw();
