@@ -1,0 +1,41 @@
+{
+  "id": "webglmaps",
+
+  "inputs": [
+    "main.js"
+  ],
+
+  "paths": [
+    "src"
+  ],
+
+  "define": {
+    "goog.dom.ASSUME_STANDARDS_MODE": true,
+    "goog.DEBUG": false
+  },
+
+  "externs": [
+    "externs/webgl_extra.js"
+  ],
+
+  "mode": "ADVANCED",
+  "level": "VERBOSE",
+  //"pretty-print": true,
+  //"debug": true,
+
+  "checks": {
+    "accessControls": "ERROR",
+    "visibility": "ERROR",
+    "checkTypes": "ERROR",
+    "checkRegExp": "ERROR",
+    "checkVars": "ERROR",
+    "deprecated": "ERROR",
+    "fileoverviewTags": "ERROR",
+    "invalidCasts": "ERROR",
+    "missingProperties": "ERROR",
+    "nonStandardJsDocs": "ERROR",
+    "undefinedVars": "ERROR"
+  },
+
+  "jsdoc-html-output-path": "jsdoc"
+}

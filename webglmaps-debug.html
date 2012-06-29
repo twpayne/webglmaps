@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="webglmaps.css"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>WebGL Maps</title>
+    <script type="text/javascript" src="http://localhost:9810/compile?id=webglmaps&mode=RAW"></script>
+  </head>
+  <body>
+    <div id="mapDiv">
+      <canvas id="map"></canvas>
+    </div>
+    <script>
+	    webglmaps.main(document.getElementById('map'));
+    </script>
+  </body>
+</html>
