@@ -24,7 +24,7 @@ The following controls are available:
 
 * `i`: toggle interim tiles on or off.
 
-* `f`: cycle fragment shader (image processing effects).  Available effects are: none, grayscale, invert, hue/saturation, hexagonalize, pop art.  While on the hue/saturation effect you can use `h`/`H` to decrease/increase hue, `s`/`S` to decrease/increase saturation, and `0` to reset the hue and saturation to their default values.
+* `f`: cycle fragment shader (image processing effects).  Available effects are: none, brightness/contrast, grayscale, invert, hue/saturation, hexagonalize, pop art.  While on the hue/saturation effect you can use `h`/`H` to decrease/increase hue, `s`/`S` to decrease/increase saturation, and `0` to reset the hue and saturation to their default values.  Similarly `b`/`B` and `c`/`C` change brightness and contrast when on that shader, `0` resets.
 
 * `v`: cycle vertex shader (transformation effects).  Available effects are: none, simple stretch, and wobble.
 
