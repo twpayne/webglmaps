@@ -87,6 +87,15 @@ webglmaps.Shader.prototype.get = function() {
 
 
 /**
+ * @protected
+ * @return {WebGLRenderingContext} Rendering context.
+ */
+webglmaps.Shader.prototype.getGL = function() {
+  return this.gl_;
+};
+
+
+/**
  * @return {boolean} Is animated?
  */
 webglmaps.Shader.prototype.isAnimated = function() {

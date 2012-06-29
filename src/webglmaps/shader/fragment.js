@@ -22,7 +22,7 @@ goog.inherits(webglmaps.shader.Fragment, webglmaps.Shader);
  * @return {WebGLShader} Shader.
  */
 webglmaps.shader.Fragment.prototype.create = function() {
-  var gl = this.gl_;
+  var gl = this.getGL();
   goog.asserts.assert(!goog.isNull(gl));
   return gl.createShader(goog.webgl.FRAGMENT_SHADER);
 };
