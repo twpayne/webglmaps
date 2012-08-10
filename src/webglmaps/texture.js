@@ -51,6 +51,10 @@ webglmaps.Texture.prototype.bind = function() {
         goog.webgl.LINEAR);
     gl.texParameteri(goog.webgl.TEXTURE_2D, goog.webgl.TEXTURE_MIN_FILTER,
         goog.webgl.LINEAR);
+    gl.texParameteri(goog.webgl.TEXTURE_2D, goog.webgl.TEXTURE_WRAP_S,
+        goog.webgl.CLAMP_TO_EDGE);
+    gl.texParameteri(goog.webgl.TEXTURE_2D, goog.webgl.TEXTURE_WRAP_T,
+        goog.webgl.CLAMP_TO_EDGE);
     this.texture_ = texture;
   } else {
     gl.bindTexture(goog.webgl.TEXTURE_2D, this.texture_);
