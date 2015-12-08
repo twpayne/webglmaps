@@ -1,3 +1,10 @@
+DEPRECATED
+==========
+
+WebGLMaps was a prototype. Almost all of its functionality (and much, much
+more) is now in [OpenLayers 3](http://openlayers.org/). WebGLMaps is no longer
+developed or maintained, but you are welcome to use this software under the terms of its license.
+
 WebGL Maps
 ==========
 
